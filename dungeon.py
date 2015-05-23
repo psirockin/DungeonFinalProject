@@ -136,8 +136,8 @@ class Monster:
 
     def attacking(self, weapon, target, damage):
         miss = False
-        critical = (random.randrange(100) <= self.equip.critical + self.skill / 2)
-        accuracy = weapon.accuracy + (self.skill * 3 + self.luck) / 2
+        critical = (random.randrange(100) <= weapon.obj.critical + self.skill / 2)
+        accuracy = weapon.obj.accuracy + (self.skill * 3 + self.luck) / 2
         ############ These are all skill checks
             
 
@@ -146,25 +146,25 @@ class Monster:
             sys.stdout.write("Missed! ")
             miss = True
         if miss == False:
-            if weapon.type == "W":
-                damage += self.strength + weapon.attack - target.defense
+            if weapon.obj.type == "W":
+                damage += self.strength + weapon.obj.attack - target.defense
                 if damage <= 0:
                     damage = 1
                 if critical:
                     sys.stdout.write("CRITICAL! " )
                     damage *= 3
                 target.HP -= damage
-                if weapon.effect == "Drain":
+                if weapon.obj.effect == "Drain":
                     heal(damage / 2)
-            elif weapon.type == "M":
-                damage += self.magic + weapon.attack - target.resist
+            elif weapon.obj.type == "M":
+                damage += self.magic + weapon.obj.attack - target.resist
                 if damage <= 0:
                     damage = 1
                 if critical:
                     sys.stdout.write("CRITICAL! " )
                     damage *= 3
                 target.HP -= damage
-                if weapon.effect == "Drain":
+                if weapon.obj.effect == "Drain":
                     self.heal(math.floor(damage / 2))
         return damage
 
@@ -367,8 +367,8 @@ class hero:
 
     def attacking(self, weapon, target, damage):
         miss = False
-        critical = (random.randrange(100) <= self.equip.critical + self.skill / 2)
-        accuracy = weapon.accuracy + (self.skill * 3 + self.luck) / 2
+        critical = (random.randrange(100) <= weapon.obj.critical + self.skill / 2)
+        accuracy = weapon.obj.accuracy + (self.skill * 3 + self.luck) / 2
         ############ These are all skill checks
             
 
@@ -377,26 +377,27 @@ class hero:
             sys.stdout.write("Missed! ")
             miss = True
         if miss == False:
-            if weapon.type == "W":
-                damage += self.strength + weapon.attack - target.defense
+            if weapon.obj.type == "W":
+                damage += self.strength + weapon.obj.attack - target.defense
                 if damage <= 0:
                     damage = 1
                 if critical:
                     sys.stdout.write("CRITICAL! " )
                     damage *= 3
                 target.HP -= damage
-                if weapon.effect == "Drain": 
+                if weapon.obj.effect == "Drain": 
                     self.heal(int(damage * .5))                    
-            elif weapon.type == "M":
-                damage += self.magic + weapon.attack - target.resist
+            elif weapon.obj.type == "M":
+                damage += self.magic + weapon.obj.attack - target.resist
                 if damage <= 0:
                     damage = 1
                 if critical:
                     sys.stdout.write("CRITICAL! " )
                     damage *= 3
                 target.HP -= damage
-                if weapon.effect == "Drain":
+                if weapon.obj.effect == "Drain":
                     self.heal(int(damage * .5))
+        weapon.dur -= 1
         return damage
 
     def heal(self,amount):
@@ -704,14 +705,18 @@ if __name__ == '__main__':
         a = int(input())
         a -= 1
     except ValueError:
-        a = 3
+        a = 2
+    print("Your asset is {}.".format(statread[a]))
+    time.sleep(1)
     print("Please enter your flaw(1-8).")
     print(statread)
     try:
         f = int(input())
         f -= 1
     except ValueError:
-        f = 2
+        f = 1
+    print("Your flaw is {}.".format(statread[f]))
+    time.sleep(1)
     char = hero(n,a,f)
     char.assetmod(a)
     char.flawmod(f)
@@ -722,15 +727,16 @@ if __name__ == '__main__':
  
     char.set_position(find_staircase(levels[current], '<'))
     
-## Initial Inventory ##
+## Initial Inventory ##############################################
     
     init = []
     init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
     init.append(item.itemwrapper(itemsys.make_item("Nosferatu"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Dying Blaze"), 1, char.position.x, char.position.y))
     for i in range(len(init)):
         bag.append(init[i])
     
-#######################
+###################################################################
 
     sys.stdout.write("\x1b[2J\x1b[H")
     while True:
@@ -755,7 +761,10 @@ if __name__ == '__main__':
         sys.stdout.write('Str:{} Mag:{} Def:{} Res:{} Skl:{} Spd:{} Lck:{}'.format(char.strength, char.magic, char.defense, char.resist, char.skill, char.speed, char.luck))
         sys.stdout.write('\n')
         if char.equip != None:
-            sys.stdout.write('Equipped: {}, which has {} uses.'.format(char.equip.name, char.equip.dur))
+            if char.equip.dur == 1:
+                sys.stdout.write('Equipped: {}, which has 1 use.'.format(char.equip.obj.name))
+            else:
+                sys.stdout.write('Equipped: {}, which has {} uses.'.format(char.equip.obj.name, char.equip.dur))
         else:
             sys.stdout.write('Equipped: Nothing!')
         sys.stdout.write('\n')
@@ -792,7 +801,7 @@ if __name__ == '__main__':
             newpos = Point(char.position.x+1, char.position.y)
             direction = "E"
 #        elif key == 'e':
-#            if char.equip != None and char.equip.range == 2:
+#            if char.equip != None and char.equip.obj.range == 2:
 #                target = enemypos(direction)
 #                if target in MONSTERS:
 #                    char.attack(char.equip)
@@ -851,7 +860,11 @@ if __name__ == '__main__':
                    if m.pos == newpos:
                         herodamage = char.howtoattack(m)
                         sys.stdout.write('{} has dealt {} damage to {}.\n'.format(char.name, herodamage, m.name))
-                        if char.equip != None and char.equip.effect == "Brave" and m.HP > 0:
+                        time.sleep(1)
+                        if char.equip != None and char.equip.dur <= 0:
+                            print("{} broke!".format(char.equip.obj.name))
+                            char.equip = None
+                        if char.equip != None and char.equip.dur > 0 and char.equip.obj.effect == "Brave" and m.HP > 0:
                             herodamage = char.howtoattack(m)
                             sys.stdout.write('ATTACK AGAIN! {} has dealt {} damage to {}.\n'.format(char.name, herodamage, m.name))
                         if m.HP > 0:

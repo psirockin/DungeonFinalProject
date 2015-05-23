@@ -24,10 +24,10 @@ def dothis(hero, a, level, pos, items, moving):
 def equip(hero, item):
     if hero.equip != None and hero.equip == item:
         hero.equip = None
-        print("Unequipped the {}.".format(item.name))
+        print("Unequipped the {}.".format(item.obj.name))
     else:
         hero.equip = item
-        print("Equipped the {}.".format(item.name))
+        print("Equipped the {}.".format(item.obj.name))
     time.sleep(1)
 
 def drop(hero, i, level, pos, items):
@@ -56,7 +56,6 @@ def sell(hero, i):
 def update():
     for a in range(len(bag) - 1, -1, -1):
         if bag[a].dur <= 0:
-            sys.stdout.write("{} is no more!".format(bag[a].obj.name))
             bag.pop(a)
  
 def interact(hero, c, level, pos, items, moving):
@@ -72,7 +71,7 @@ def interact(hero, c, level, pos, items, moving):
                     print("You can't equip that!")
                     time.sleep(2)
                 else:
-                    equip(hero, obj.obj)
+                    equip(hero, obj)
                 moving = False
                 return
             elif a == '2':

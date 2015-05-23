@@ -20,6 +20,7 @@ catalog = [
     weapon("Bronze Sword","Novice sword","Sword",3,100,0,None,None,350,"W",1,50),
     weapon("Rapier","Slender and regal.","Sword",5,90,10,None,None,1600,"W",1,35),
     weapon("Tree Branch","lol","Sword",1,100,0,None,None,100,"W",1,20),
+    weapon("Dying Blaze","Strong but breaks easily.","Magic",10,75,0,None,None,600,"M",2,3),
     item("Vulnerary","Basic healing potion",None,10,300,"H",3)
 ],
 [
