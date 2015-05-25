@@ -49,9 +49,14 @@ def drop(hero, i, level, pos, items):
     print("No dropping locations available.")
 
 def sell(hero, i):
-    if i == hero.equip:
+    if hero.equip != None and i.obj == hero.equip.obj:
         print("Unequip this first.")
         return
+    for a in range(len(bag) - 1, -1, -1):
+        if i.obj == bag[a].obj:
+            hero.money += int(i.obj.cost * .5)
+            bag.pop(a)
+            return
 
 def update():
     for a in range(len(bag) - 1, -1, -1):
