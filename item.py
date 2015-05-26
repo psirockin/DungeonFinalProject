@@ -61,6 +61,7 @@ catalog = [
     weapon("Goetia","Otherworldly grimoire, haunting death by the arcane darkness!","Magic",19,75,10,None,None,0,"M",2,25),
     weapon("Sol Katti","A plainsman's blade.","Sword",8,100,50,None,None,0,"W",1,25),
     weapon("Sol","Chance to recover half HP.","Sword",12,85,5,"Sol",None,0,"W",1,30),
+    weapon("Luna","Chance to half opponent's defenses during damage calculation.","Lance",14,80,5,"Luna",None,0,"W",1,30),
     weapon("Mercurius","SO. MUCH. POWER.","Sword",17,95,5,None,None,0,"W",1,25)
 ]
  

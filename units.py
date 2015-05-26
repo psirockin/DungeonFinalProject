@@ -14,7 +14,9 @@ unit("Myrmidon", ["Sword"], [40,20,0,25,25,0,5,5],["Swordmaster","Assassin"],[16
 unit("Archer",["Bow"],[45,15,0,30,15,0,10,5],["Sniper","Bow Knight"],[16,5,0,8,6,0,5,0],[60,26,20,29,25,30,25,21]),
 unit("Thief",["Sword"],[35,15,5,25,25,0,5,5],["Assassin","Trickster"],[16,3,0,6,8,0,2,0],[60,22,20,30,28,30,21,20]),
 unit("Mage",["Magic"],[35,0,20,20,20,0,5,10],["Sage","Dark Knight"],[16,0,4,3,4,0,2,3],[60,20,28,27,26,30,21,25]),
-unit("Wyvern Rider",["Axe"],[45,30,0,15,15,0,10,5],["Wyvern Lord","Griffon Rider"],[19,7,0,6,5,0,8,0],[60,28,20,24,24,30,28,20])
+unit("Wyvern Rider",["Axe"],[45,30,0,15,15,0,10,5],["Wyvern Lord","Griffon Rider"],[19,7,0,6,5,0,8,0],[60,28,20,24,24,30,28,20]),
+unit("Knight",["Lance"],[50,25,0,15,10,0,15,5],["General","Great Knight"],[18,8,0,4,2,0,11,0],[60,30,20,26,23,30,0,30,22]),
+unit("Dark Mage",["Magic"],[50,5,15,15,15,0,10,10],["Sorcerer","Dark Knight"],[18,1,3,2,3,0,4,4],[60,20,27,25,25,30,25,27])
 ]
 ,
 [
@@ -32,7 +34,8 @@ unit("Sage",["Magic","Staff"],[35,0,20,20,20,0,5,10],None,[20,1,7,5,7,0,4,5],[80
 unit("Dark Knight",["Magic","Sword"],[50,15,15,15,15,0,10,5],None,[25,4,5,6,5,0,9,5],[80,38,41,40,40,45,42,38]),
 unit("Sorcerer",["Magic"],[45,0,20,15,15,0,10,10],None,[23,2,6,4,4,0,7,7],[80,30,44,38,40,45,41,44]),
 unit("Wyvern Lord",["Axe","Lance"],[45,30,0,15,15,0,10,5],None,[24,11,0,8,7,0,11,3],[80,46,30,38,38,45,46,30]),
-unit("Griffon Rider",["Axe"],[45,25,0,20,20,0,5,5],None,[22,9,0,10,9,0,8,3],[80,40,30,43,41,45,40,30])
+unit("Griffon Rider",["Axe"],[45,25,0,20,20,0,5,5],None,[22,9,0,10,9,0,8,3],[80,40,30,43,41,45,40,30]),
+unit("General",["Lance","Axe"],[50,25,0,15,10,0,15,10],None,[28,12,0,7,4,0,15,3],[80,50,30,41,35,45,50,35])
 ]
 ]
 
@@ -41,3 +44,9 @@ def setclass(theclass):
         for j in range(len(data[i])):
             if theclass == data[i][j].name:
                 return data[i][j]
+
+def ispromote(theclass):
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            if theclass == data[i][j].name:
+                return i

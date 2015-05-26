@@ -25,9 +25,11 @@ def equip(hero, item):
     if hero.equip != None and hero.equip == item:
         hero.equip = None
         print("Unequipped the {}.".format(item.obj.name))
-    else:
+    elif hero.equip == None and item.obj.subclass in hero.type.weapons:
         hero.equip = item
         print("Equipped the {}.".format(item.obj.name))
+    else:
+        print("You can't equip this!")
     time.sleep(1)
 
 def drop(hero, i, level, pos, items):

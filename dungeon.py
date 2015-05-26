@@ -12,7 +12,7 @@ import tty
 import time
 import item
 import math
-from units import data, setclass
+from units import data, setclass, ispromote
  
 #control variables
 capacity = 5
@@ -191,7 +191,9 @@ class hero:
         self.max = self.type.maximum
         self.name = name
         self.exp = 0
-        self.actuallvl = 1
+        self.culmlvl = 0
+        self.promoted = 0
+        self.actuallvl = 0
         self.displvl = 1
         self.bag = bag
         self.equip = None
@@ -202,8 +204,8 @@ class hero:
         sys.stdout.write("Gained {} EXP. ".format(exp))
         while self.exp >= 100:
             self.exp -= 100
-            self.actuallvl += 1
             self.displvl += 1
+            self.actuallvl = self.displvl + self.culmlvl + self.promoted
             sys.stdout.write("Level up! ")
             self.grow()
 
@@ -217,10 +219,11 @@ class hero:
             amount = promo.basestats[i] - self.type.basestats[i]
             if amount < 0:
                 word = 'decreased'
-            self.stats[i] += amount #Calculating promo bonuses...
-            print("Your {} has {} by {}.".format(statread[i], word, abs(amount)))
+            self.stats[i] += amount #Calculating promo bonuses...            
             if self.stats[i] > self.max[i]:
+                amount -= self.stats[i] - self.max[i]
                 self.stats[i] = self.max[i]
+            print("Your {} has {} by {}.".format(statread[i], word, abs(amount)))
         self.setstats()
 
     def growmod(self, promo):
@@ -403,6 +406,8 @@ class hero:
             print("You will be {} by default.".format(self.type.classes[0]))
             c = 0      
         target = self.type.classes[c]
+        self.promoted = 20
+        self.editstats(target)
 
     def reclass(self):
         sys.stdout.write("\x1b[2J\x1b[H")
@@ -414,11 +419,17 @@ class hero:
                 able.append(data[i][j].name)
         for k in range(len(able)):
             print("{} {}".format(k+1, able[k]))
+        c = checkinput(input(),able)
         if c == None:
             print("You have incorrectly entered a class or chose not to enter.")
             print("You will be {} by default.".format(able[0]))
             c = 0      
         target = able[c]
+        if ispromote(target) == 0:
+            self.promoted = 0
+        calc = self.displvl - 1 + self.promoted
+        calc = int(calc / 2)
+        self.culmlvl += calc
         self.editstats(target)
 
     def editstats(self, tar):        
@@ -428,6 +439,7 @@ class hero:
         self.growmod(setclass(tar))
         self.type = setclass(tar)        
         self.displvl = 1
+        self.actuallvl = self.displvl + self.culmlvl + self.promoted
         time.sleep(2)
         return
 
@@ -829,7 +841,8 @@ if __name__ == '__main__':
     init = []
     init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
     init.append(item.itemwrapper(itemsys.make_item("Nosferatu"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Master Seal"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Second Seal"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Luna"), 1, char.position.x, char.position.y))
     for i in range(len(init)):
         bag.append(init[i])
     
@@ -853,8 +866,10 @@ if __name__ == '__main__':
         old, level[char.position.x][char.position.y] = level[char.position.x][char.position.y], 'Д' #changed @ with Д
         print_level(level)
         level[char.position.x][char.position.y] = old
- 
-        sys.stdout.write('{} HP:{}/{} Class:{} Lvl:{} EXP:{}/100 Money:{}\n'.format(char.name,char.HP,char.maxHP,char.type.name,char.displvl, char.exp, char.money))
+        if char.displvl == 20:
+            sys.stdout.write('{} HP:{}/{} Class:{} Lvl:{} EXP:MAX Money:{}\n'.format(char.name,char.HP,char.maxHP,char.type.name,char.displvl, char.money))
+        else:
+            sys.stdout.write('{} HP:{}/{} Class:{} Lvl:{} EXP:{}/100 Money:{}\n'.format(char.name,char.HP,char.maxHP,char.type.name,char.displvl, char.exp, char.money))
         sys.stdout.write('Str:{} Mag:{} Def:{} Res:{} Skl:{} Spd:{} Lck:{}'.format(char.strength, char.magic, char.defense, char.resist, char.skill, char.speed, char.luck))
         sys.stdout.write('\n')
         if char.equip != None:
