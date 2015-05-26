@@ -2,36 +2,37 @@
 
 import collections
 
-unit = collections.namedtuple('unit', 'name weapons base classes basestats')
+unit = collections.namedtuple('unit', 'name weapons base classes basestats maximum')
 #The final parameter is used to calculate promo/reclass bonuses.
 #HP, strength, magic, skill, speed, luck, defense, resist
 data = [
 [
-unit("Tactician", ["Sword", "Magic"], [40, 15, 15, 15, 15, 0, 10, 10],["Grandmaster"],[16,4,3,5,5,0,5,3]),
-unit("Cavalier", ["Sword", "Lance"], [45, 20, 0, 20, 20, 0, 10, 5],["Great Knight","Paladin"],[18,6,0,5,6,7,0]),
-unit("Mercenary", ["Sword"], [45, 20, 0, 25, 20, 0, 10, 5],["Hero","Bow Knight"],[18,5,0,8,7,0,5,0]),
-unit("Myrmidon", ["Sword"], [40,20,0,25,25,0,5,5],["Swordmaster","Assassin"],[16,4,1,9,10,0,4,1]),
-unit("Archer",["Bow"],[45,15,0,30,15,0,10,5],["Sniper","Bow Knight"],[16,5,0,8,6,0,5,0]),
-unit("Thief",["Sword"],[35,15,5,25,25,0,5,5],["Assassin","Trickster"],[16,3,0,6,8,0,2,0]),
-unit("Mage",["Magic"],[35,0,20,20,20,0,5,10],["Sage","Dark Knight"],[16,0,4,3,4,0,2,3]),
-unit("Wyvern Rider",["Axe"],[45,30,0,15,15,0,10,5],["Wyvern Lord","Griffon Rider"],[19,7,0,6,5,0,8,0])
+unit("Tactician", ["Sword", "Magic"], [40, 15, 15, 15, 15, 0, 10, 10],["Grandmaster"],[16,4,3,5,5,0,5,3],[60,25,25,25,25,30,25,25]),
+unit("Cavalier", ["Sword", "Lance"], [45, 20, 0, 20, 20, 0, 10, 5],["Great Knight","Paladin"],[18,6,0,5,6,7,0],[60,26,20,25,25,30,26,26]),
+unit("Mercenary", ["Sword"], [45, 20, 0, 25, 20, 0, 10, 5],["Hero","Bow Knight"],[18,5,0,8,7,0,5,0],[60,26,20,28,26,30,25,23]),
+unit("Myrmidon", ["Sword"], [40,20,0,25,25,0,5,5],["Swordmaster","Assassin"],[16,4,1,9,10,0,4,1],[60,24,22,27,28,30,22,24]),
+unit("Archer",["Bow"],[45,15,0,30,15,0,10,5],["Sniper","Bow Knight"],[16,5,0,8,6,0,5,0],[60,26,20,29,25,30,25,21]),
+unit("Thief",["Sword"],[35,15,5,25,25,0,5,5],["Assassin","Trickster"],[16,3,0,6,8,0,2,0],[60,22,20,30,28,30,21,20]),
+unit("Mage",["Magic"],[35,0,20,20,20,0,5,10],["Sage","Dark Knight"],[16,0,4,3,4,0,2,3],[60,20,28,27,26,30,21,25]),
+unit("Wyvern Rider",["Axe"],[45,30,0,15,15,0,10,5],["Wyvern Lord","Griffon Rider"],[19,7,0,6,5,0,8,0],[60,28,20,24,24,30,28,20])
 ]
 ,
 [
-unit("Grandmaster", ["Sword", "Magic"], [40, 15, 15, 15, 15, 0, 10, 10],None,[20,7,6,7,7,0,7,5]),
-unit("Paladin", ["Sword", "Lance"], [45, 20, 0, 20, 20, 10, 10],None,[25,9,1,7,8,0,10,6]),
-unit("Great Knight",["Sword","Lance","Axe"],[50,25,0,15,15,0,15,5],None,[26,11,0,6,5,0,14,1]),
-unit("Hero", ["Sword", "Axe"], [45, 20, 0, 25, 20, 0, 10, 5],None,[22,8,1,11,10,0,8,3]),
-unit("Swordmaster",["Sword"],[40,20,0,25,25,0,5,10],None,[20,7,2,11,13,0,6,4]),
-unit("Sniper",["Bow"],[45,15,0,30,15,0,15,5],None,[20,7,1,12,9,0,10,3]),
-unit("Bow Knight",["Bow","Sword"],[50,20,0,25,20,0,5,5],None,[24,8,0,10,10,0,6,2]),
-unit("Assassin",["Sword","Bow"],[40,20,0,30,25,0,5,5],None,[21,8,0,13,12,0,5,1]),
-unit("Trickster",["Sword","Staff"],[35,10,15,25,20,0,5,10],None,[19,4,4,10,11,0,3,5]), #Note: Do I want to put staff in here?
-unit("Sage",["Magic","Staff"],[35,0,20,20,20,0,5,10],None,[20,1,7,5,7,0,4,5]),
-unit("Dark Knight",["Magic","Sword"],[50,15,15,15,15,0,10,5],None,[25,4,5,6,5,0,9,5]),
-unit("Sorcerer",["Magic"],[45,0,20,15,15,0,10,10],None,[23,2,6,4,4,0,7,7]),
-unit("Wyvern Lord",["Axe","Lance"],[45,30,0,15,15,0,10,5],None,[24,11,0,8,7,0,11,3]),
-unit("Griffon Rider",["Axe"],[45,25,0,20,20,0,5,5],None,[22,9,0,10,9,0,8,3])
+unit("Grandmaster", ["Sword", "Magic"], [40, 15, 15, 15, 15, 0, 10, 10],None,[20,7,6,7,7,0,7,5],[80,40,40,40,40,45,40,40]),
+unit("Paladin", ["Sword", "Lance"], [45, 20, 0, 20, 20, 10, 10],None,[25,9,1,7,8,0,10,6],[80,42,30,40,40,45,42,42]),
+unit("Great Knight",["Sword","Lance","Axe"],[50,25,0,15,15,0,15,5],None,[26,11,0,6,5,0,14,1],[80,48,20,34,37,45,48,30]),
+unit("Hero", ["Sword", "Axe"], [45, 20, 0, 25, 20, 0, 10, 5],None,[22,8,1,11,10,0,8,3],[80,50,30,41,35,45,50,35]),
+unit("Swordmaster",["Sword"],[40,20,0,25,25,0,5,10],None,[20,7,2,11,13,0,6,4],[80,38,34,44,46,45,33,38]),
+unit("Sniper",["Bow"],[45,15,0,30,15,0,15,5],None,[20,7,1,12,9,0,10,3],[80,42,30,46,42,45,40,36]),
+unit("Bow Knight",["Bow","Sword"],[50,20,0,25,20,0,5,5],None,[24,8,0,10,10,0,6,2],[80,40,30,43,41,45,35,30]),
+unit("Assassin",["Sword","Bow"],[40,20,0,30,25,0,5,5],None,[21,8,0,13,12,0,5,1],[80,40,30,48,46,45,31,30]),
+unit("Trickster",["Sword","Staff"],[35,10,15,25,20,0,5,10],None,[19,4,4,10,11,0,3,5],[80,35,38,45,43,45,30,40]), 
+#Note: Do I want to put staff in here?
+unit("Sage",["Magic","Staff"],[35,0,20,20,20,0,5,10],None,[20,1,7,5,7,0,4,5],[80,30,46,43,42,45,31,40]),
+unit("Dark Knight",["Magic","Sword"],[50,15,15,15,15,0,10,5],None,[25,4,5,6,5,0,9,5],[80,38,41,40,40,45,42,38]),
+unit("Sorcerer",["Magic"],[45,0,20,15,15,0,10,10],None,[23,2,6,4,4,0,7,7],[80,30,44,38,40,45,41,44]),
+unit("Wyvern Lord",["Axe","Lance"],[45,30,0,15,15,0,10,5],None,[24,11,0,8,7,0,11,3],[80,46,30,38,38,45,46,30]),
+unit("Griffon Rider",["Axe"],[45,25,0,20,20,0,5,5],None,[22,9,0,10,9,0,8,3],[80,40,30,43,41,45,40,30])
 ]
 ]
 

@@ -187,6 +187,8 @@ class hero:
         self.stats = [19,6,5,5,6,4,6,4]
         self.base = [40,40,35,35,35,55,30,20] #This is personal to the player. I will use this a lot for changing class.
         self.default = [0,0,0,0,0,0,0,0] #HP, Str, Mag, Skl, Spd, Lck, Def, Res
+        self.modify = [0,0,0,0,0,0,0,0] #This will be static once assets and flaws are determined
+        self.max = self.type.maximum
         self.name = name
         self.exp = 0
         self.actuallvl = 1
@@ -205,6 +207,10 @@ class hero:
             sys.stdout.write("Level up! ")
             self.grow()
 
+    def maxmod(self, promo):
+        for i in range(len(self.max)):
+            self.max[i] = promo.maximum[i] + self.modify[i]
+
     def statmod(self, promo):
         for i in range(len(self.stats)):
             word = 'increased'
@@ -213,119 +219,147 @@ class hero:
                 word = 'decreased'
             self.stats[i] += amount #Calculating promo bonuses...
             print("Your {} has {} by {}.".format(statread[i], word, abs(amount)))
+            if self.stats[i] > self.max[i]:
+                self.stats[i] = self.max[i]
         self.setstats()
 
     def growmod(self, promo):
         for i in range(len(self.base)):
             chance = self.base[i] + promo.base[i]
             self.default[i] = chance
-            print("You now have a {}% chance to gain {} every time you level up.".format(chance, statread[i]))
+#           print("You now have a {}% chance to gain {} every time you level up.".format(chance, statread[i])) #Only uncomment if debug
 
     def grow(self):
-        g = random.randrange(100)
         gain = False
-        if g <= self.default[0]:
-            self.HP += 1
-            sys.stdout.write("Gained 1 HP.\n")
-            gain = True
-        if g <= self.default[1]:
-            self.strength += 1
-            sys.stdout.write("Gained 1 strength.\n")
-            gain = True
-        if g <= self.default[2]:
-            self.magic += 1
-            sys.stdout.write("Gained 1 magic.\n")
-            gain = True
-        if g <= self.default[3]:
-            self.skill += 1
-            sys.stdout.write("Gained 1 skill.\n")
-            gain = True
-        if g <= self.default[4]:
-            self.speed += 1
-            sys.stdout.write("Gained 1 speed.\n")
-            gain = True
-        if g <= self.default[5]:
-            self.luck += 1
-            sys.stdout.write("Gained 1 luck.\n")
-            gain = True
-        if g <= self.default[6]:
-            self.defense += 1
-            sys.stdout.write("Gained 1 defense.\n")
-            gain = True
-        if g <= self.default[7]:
-            self.resist += 1
-            sys.stdout.write("Gained 1 resistance.\n")
-            gain = True
+        for i in range(len(self.default)):
+            g = random.randrange(100)
+            if g <= self.default[i] and self.stats[i] < self.max[i]:
+                self.stats[i] += 1
+                sys.stdout.write("Gained 1 {}.\n".format(statread[i]))
+                gain = True
         if gain == False:
             sys.stdout.write("Sadly, no stats were gained this time.\n")
+        self.setstats()
  
     def assetmod(self,a):
         if a == 0:
             self.base[a] += 15
             self.base[6] += 5
             self.base[7] += 5
+            self.modify[1] += 1
+            self.modify[2] += 1
+            self.modify[5] += 2
+            self.modify[6] += 2
+            self.modify[7] += 2
         elif a == 1:
             self.base[a] += 10
             self.base[3] += 5
             self.base[6] += 5
+            self.modify[1] += 4
+            self.modify[3] += 2
+            self.modify[6] += 2
         elif a == 2:
             self.base[a] += 10
             self.base[4] += 5
             self.base[7] += 5
+            self.modify[2] += 4
+            self.modify[4] += 2
+            self.modify[7] += 2
         elif a == 3:
             self.base[a] += 10
             self.base[1] += 5
             self.base[6] += 5
+            self.modify[1] += 2
+            self.modify[3] += 4
+            self.modify[6] += 2
         elif a == 4:
             self.base[a] += 10
             self.base[3] += 5
             self.base[5] += 5
+            self.modify[3] += 2
+            self.modify[4] += 4
+            self.modify[5] += 2
         elif a == 5:
             self.base[a] += 10
             self.base[1] += 5
             self.base[2] += 5
+            self.modify[1] += 2
+            self.modify[2] += 2
+            self.modify[5] += 4
         elif a == 6:
             self.base[a] += 10
             self.base[5] += 5
             self.base[7] += 5
+            self.modify[5] += 2
+            self.modify[6] += 4
+            self.modify[7] += 2
         elif a == 7:
             self.base[a] += 10
             self.base[2] += 5
             self.base[4] += 5
+            self.modify[2] += 2
+            self.modify[4] += 2
+            self.modify[7] += 4
  
     def flawmod(self,a):
         if a == 0:
             self.base[a] -= 15
             self.base[6] -= 5
             self.base[7] -= 5
+            self.modify[1] -= 1
+            self.modify[2] -= 1
+            self.modify[5] -= 1
+            self.modify[6] -= 1
+            self.modify[7] -= 1
         elif a == 1:
             self.base[a] -= 10
             self.base[3] -= 5
             self.base[6] -= 5
+            self.modify[1] -= 3
+            self.modify[3] -= 1
+            self.modify[6] -= 1
         elif a == 2:
             self.base[a] -= 10
             self.base[4] -= 5
             self.base[7] -= 5
+            self.modify[2] -= 3
+            self.modify[4] -= 1
+            self.modify[7] -= 1
         elif a == 3:
             self.base[a] -= 10
             self.base[1] -= 5
             self.base[6] -= 5
+            self.modify[1] -= 1
+            self.modify[3] -= 3
+            self.modify[6] -= 1
         elif a == 4:
             self.base[a] -= 10
             self.base[3] -= 5
             self.base[5] -= 5
+            self.modify[3] -= 1
+            self.modify[4] -= 3
+            self.modify[5] -= 1
         elif a == 5:
             self.base[a] -= 10
             self.base[1] -= 5
             self.base[2] -= 5
+            self.modify[1] -= 1
+            self.modify[2] -= 1
+            self.modify[5] -= 3
         elif a == 6:
             self.base[a] -= 10
             self.base[5] -= 5
             self.base[7] -= 5
+            self.modify[5] -= 1
+            self.modify[6] -= 3
+            self.modify[7] -= 1
         elif a == 7:
             self.base[a] -= 10
             self.base[2] -= 5
             self.base[4] -= 5
+            self.modify[2] -= 1
+            self.modify[4] -= 1
+            self.modify[7] -= 3
  
     def adjust(self,a,f):
         for i in range(len(self.default)):
@@ -389,6 +423,7 @@ class hero:
 
     def editstats(self, tar):        
         print("You are now a {}.\n".format(tar))
+        self.maxmod(setclass(tar))
         self.statmod(setclass(tar))
         self.growmod(setclass(tar))
         self.type = setclass(tar)        
