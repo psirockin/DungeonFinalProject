@@ -12,7 +12,9 @@ unit("Cavalier", ["Sword", "Lance"], [45, 20, 0, 20, 20, 0, 10, 5],["Great Knigh
 unit("Mercenary", ["Sword"], [45, 20, 0, 25, 20, 0, 10, 5],["Hero","Bow Knight"],[18,5,0,8,7,0,5,0]),
 unit("Myrmidon", ["Sword"], [40,20,0,25,25,0,5,5],["Swordmaster","Assassin"],[16,4,1,9,10,0,4,1]),
 unit("Archer",["Bow"],[45,15,0,30,15,0,10,5],["Sniper","Bow Knight"],[16,5,0,8,6,0,5,0]),
-unit("Thief",["Sword"],[35,15,5,25,25,0,5,5],["Assassin","Trickster"],[16,3,0,6,8,0,2,0])
+unit("Thief",["Sword"],[35,15,5,25,25,0,5,5],["Assassin","Trickster"],[16,3,0,6,8,0,2,0]),
+unit("Mage",["Magic"],[35,0,20,20,20,0,5,10],["Sage","Dark Knight"],[16,0,4,3,4,0,2,3]),
+unit("Wyvern Rider",["Axe"],[45,30,0,15,15,0,10,5],["Wyvern Lord","Griffon Rider"],[19,7,0,6,5,0,8,0])
 ]
 ,
 [
@@ -24,6 +26,17 @@ unit("Swordmaster",["Sword"],[40,20,0,25,25,0,5,10],None,[20,7,2,11,13,0,6,4]),
 unit("Sniper",["Bow"],[45,15,0,30,15,0,15,5],None,[20,7,1,12,9,0,10,3]),
 unit("Bow Knight",["Bow","Sword"],[50,20,0,25,20,0,5,5],None,[24,8,0,10,10,0,6,2]),
 unit("Assassin",["Sword","Bow"],[40,20,0,30,25,0,5,5],None,[21,8,0,13,12,0,5,1]),
-unit("Trickster",["Sword","Staff"],[35,10,15,25,20,0,5,10],None,[19,4,4,10,11,0,3,5]) #Note: Do I want to put staff in here?
+unit("Trickster",["Sword","Staff"],[35,10,15,25,20,0,5,10],None,[19,4,4,10,11,0,3,5]), #Note: Do I want to put staff in here?
+unit("Sage",["Magic","Staff"],[35,0,20,20,20,0,5,10],None,[20,1,7,5,7,0,4,5]),
+unit("Dark Knight",["Magic","Sword"],[50,15,15,15,15,0,10,5],None,[25,4,5,6,5,0,9,5]),
+unit("Sorcerer",["Magic"],[45,0,20,15,15,0,10,10],None,[23,2,6,4,4,0,7,7]),
+unit("Wyvern Lord",["Axe","Lance"],[45,30,0,15,15,0,10,5],None,[24,11,0,8,7,0,11,3]),
+unit("Griffon Rider",["Axe"],[45,25,0,20,20,0,5,5],None,[22,9,0,10,9,0,8,3])
 ]
 ]
+
+def setclass(theclass):
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            if theclass == data[i][j].name:
+                return data[i][j]

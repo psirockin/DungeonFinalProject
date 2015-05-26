@@ -33,6 +33,7 @@ def equip(hero, item):
 def drop(hero, i, level, pos, items):
     if i == hero.equip:
         print("Unequip this first.")
+        time.sleep(1)
         return
     index = [-1,0,1]
     for a in range(3):
@@ -51,6 +52,7 @@ def drop(hero, i, level, pos, items):
 def sell(hero, i):
     if hero.equip != None and i.obj == hero.equip.obj:
         print("Unequip this first.")
+        time.sleep(1)
         return
     for a in range(len(bag) - 1, -1, -1):
         if i.obj == bag[a].obj:
@@ -83,14 +85,16 @@ def interact(hero, c, level, pos, items, moving):
                 used = False
                 if obj.obj.type == "C":
                     if hero.displvl >= 10:
-                        if obj.obj.name == "Master Seal": 
+                        if obj.obj.name == "Master Seal" and hero.type.classes != None: 
                             hero.promote()
-                        else:
+                            moving = True
+                            used = True
+                        elif obj.obj.name == "Second Seal":
                             hero.reclass()
-                        moving = True
-                        used = True
+                            moving = True
+                            used = True
                     else:
-                        print("You can't use this yet.")
+                        print("You can't use this.")
                 elif obj.obj.type == "H":
                     hero.heal(obj.obj.effect)
                     moving = True

@@ -12,7 +12,7 @@ import tty
 import time
 import item
 import math
-from units import data
+from units import data, setclass
  
 #control variables
 capacity = 5
@@ -183,10 +183,10 @@ class Monster:
 class hero:
     def __init__(self, name, a, f):
         self.money = 1000
-        self.type = "Tactician"
+        self.type = setclass("Tactician")
         self.stats = [19,6,5,5,6,4,6,4]
         self.base = [40,40,35,35,35,55,30,20] #This is personal to the player. I will use this a lot for changing class.
-        self.default = [80,55,50,50,50,55,40,30] #HP, Str, Mag, Skl, Spd, Lck, Def, Res
+        self.default = [0,0,0,0,0,0,0,0] #HP, Str, Mag, Skl, Spd, Lck, Def, Res
         self.name = name
         self.exp = 0
         self.actuallvl = 1
@@ -204,7 +204,23 @@ class hero:
             self.displvl += 1
             sys.stdout.write("Level up! ")
             self.grow()
- 
+
+    def statmod(self, promo):
+        for i in range(len(self.stats)):
+            word = 'increased'
+            amount = promo.basestats[i] - self.type.basestats[i]
+            if amount < 0:
+                word = 'decreased'
+            self.stats[i] += amount #Calculating promo bonuses...
+            print("Your {} has {} by {}.".format(statread[i], word, abs(amount)))
+        self.setstats()
+
+    def growmod(self, promo):
+        for i in range(len(self.base)):
+            chance = self.base[i] + promo.base[i]
+            self.default[i] = chance
+            print("You now have a {}% chance to gain {} every time you level up.".format(chance, statread[i]))
+
     def grow(self):
         g = random.randrange(100)
         gain = False
@@ -245,73 +261,75 @@ class hero:
  
     def assetmod(self,a):
         if a == 0:
-            self.default[a] += 15
-            self.default[6] += 5
-            self.default[7] += 5
+            self.base[a] += 15
+            self.base[6] += 5
+            self.base[7] += 5
         elif a == 1:
-            self.default[a] += 10
-            self.default[3] += 5
-            self.default[6] += 5
+            self.base[a] += 10
+            self.base[3] += 5
+            self.base[6] += 5
         elif a == 2:
-            self.default[a] += 10
-            self.default[4] += 5
-            self.default[7] += 5
+            self.base[a] += 10
+            self.base[4] += 5
+            self.base[7] += 5
         elif a == 3:
-            self.default[a] += 10
-            self.default[1] += 5
-            self.default[6] += 5
+            self.base[a] += 10
+            self.base[1] += 5
+            self.base[6] += 5
         elif a == 4:
-            self.default[a] += 10
-            self.default[3] += 5
-            self.default[5] += 5
+            self.base[a] += 10
+            self.base[3] += 5
+            self.base[5] += 5
         elif a == 5:
-            self.default[a] += 10
-            self.default[1] += 5
-            self.default[2] += 5
+            self.base[a] += 10
+            self.base[1] += 5
+            self.base[2] += 5
         elif a == 6:
-            self.default[a] += 10
-            self.default[5] += 5
-            self.default[7] += 5
+            self.base[a] += 10
+            self.base[5] += 5
+            self.base[7] += 5
         elif a == 7:
-            self.default[a] += 10
-            self.default[2] += 5
-            self.default[4] += 5
+            self.base[a] += 10
+            self.base[2] += 5
+            self.base[4] += 5
  
     def flawmod(self,a):
         if a == 0:
-            self.default[a] -= 15
-            self.default[6] -= 5
-            self.default[7] -= 5
+            self.base[a] -= 15
+            self.base[6] -= 5
+            self.base[7] -= 5
         elif a == 1:
-            self.default[a] -= 10
-            self.default[3] -= 5
-            self.default[6] -= 5
+            self.base[a] -= 10
+            self.base[3] -= 5
+            self.base[6] -= 5
         elif a == 2:
-            self.default[a] -= 10
-            self.default[4] -= 5
-            self.default[7] -= 5
+            self.base[a] -= 10
+            self.base[4] -= 5
+            self.base[7] -= 5
         elif a == 3:
-            self.default[a] -= 10
-            self.default[1] -= 5
-            self.default[6] -= 5
+            self.base[a] -= 10
+            self.base[1] -= 5
+            self.base[6] -= 5
         elif a == 4:
-            self.default[a] -= 10
-            self.default[3] -= 5
-            self.default[5] -= 5
+            self.base[a] -= 10
+            self.base[3] -= 5
+            self.base[5] -= 5
         elif a == 5:
-            self.default[a] -= 10
-            self.default[1] -= 5
-            self.default[2] -= 5
+            self.base[a] -= 10
+            self.base[1] -= 5
+            self.base[2] -= 5
         elif a == 6:
-            self.default[a] -= 10
-            self.default[5] -= 5
-            self.default[7] -= 5
+            self.base[a] -= 10
+            self.base[5] -= 5
+            self.base[7] -= 5
         elif a == 7:
-            self.default[a] -= 10
-            self.default[2] -= 5
-            self.default[4] -= 5
+            self.base[a] -= 10
+            self.base[2] -= 5
+            self.base[4] -= 5
  
     def adjust(self,a,f):
+        for i in range(len(self.default)):
+            self.default[i] = self.base[i] + self.type.base[i]
         if a == 0:
             self.stats[a] += 5
         elif a == 5:
@@ -324,6 +342,9 @@ class hero:
             self.stats[f] -= 2
         else:
             self.stats[f] -= 1
+        self.setstats()
+
+    def setstats(self):
         self.maxHP = self.stats[0]
         self.HP = self.stats[0]
         self.strength = self.stats[1]
@@ -338,9 +359,41 @@ class hero:
         self.position = newpos
 
     def promote(self):
-        return
+        sys.stdout.write("\x1b[2J\x1b[H")
+        print("Please enter one of the listed classes.\n")
+        for i in range(len(self.type.classes)):
+            print("{} {}\n".format(i+1, self.type.classes[i]))
+        c = checkinput(input(),self.type.classes)
+        if c == None:
+            print("You have incorrectly entered a class or chose not to enter.")
+            print("You will be {} by default.".format(self.type.classes[0]))
+            c = 0      
+        target = self.type.classes[c]
 
     def reclass(self):
+        sys.stdout.write("\x1b[2J\x1b[H")
+        able = []
+        additionalclasses = self.displvl >= 10 and self.type.classes == None
+        print("Please enter one of the listed classes.\n")
+        for i in range(len(data)):
+            for j in range(len(data[i])):
+                able.append(data[i][j].name)
+        for k in range(len(able)):
+            print("{} {}".format(k+1, able[k]))
+        if c == None:
+            print("You have incorrectly entered a class or chose not to enter.")
+            print("You will be {} by default.".format(able[0]))
+            c = 0      
+        target = able[c]
+        self.editstats(target)
+
+    def editstats(self, tar):        
+        print("You are now a {}.\n".format(tar))
+        self.statmod(setclass(tar))
+        self.growmod(setclass(tar))
+        self.type = setclass(tar)        
+        self.displvl = 1
+        time.sleep(2)
         return
 
     def howtoattack(self,target):
@@ -431,6 +484,13 @@ class hero:
                                                          #*YOU ARE NOW ENTERING THE OVERWORLD*#
 
 #############################################################################################################################################
+def checkinput(put, array):
+    if put == None:
+        return None
+    for i in range(len(array)):
+        if put.lower() == array[i].lower():
+            return i
+    return None
 
 def enemypos(dir):
     if dir == "N":
@@ -699,20 +759,22 @@ if __name__ == '__main__':
     n = input()
     if n == '':
         n = "Joan Rivers"
-    print("Please enter your asset(1-8).")
+    print("Please enter your asset.")
     print(statread)
     try:
-        a = int(input())
-        a -= 1
+        a = checkinput(input(), statread)
+        if a == None:
+            a = 2
     except ValueError:
         a = 2
     print("Your asset is {}.".format(statread[a]))
     time.sleep(1)
-    print("Please enter your flaw(1-8).")
+    print("Please enter your flaw.")
     print(statread)
     try:
-        f = int(input())
-        f -= 1
+        f = checkinput(input(), statread)
+        if f == a or f == None:
+            f = 1
     except ValueError:
         f = 1
     print("Your flaw is {}.".format(statread[f]))
@@ -732,7 +794,7 @@ if __name__ == '__main__':
     init = []
     init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
     init.append(item.itemwrapper(itemsys.make_item("Nosferatu"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Dying Blaze"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Master Seal"), 1, char.position.x, char.position.y))
     for i in range(len(init)):
         bag.append(init[i])
     
@@ -757,14 +819,14 @@ if __name__ == '__main__':
         print_level(level)
         level[char.position.x][char.position.y] = old
  
-        sys.stdout.write('{} HP:{}/{}  Class: {} Lvl:{}  EXP:{}/100 Money: {}\n'.format(char.name,char.HP,char.maxHP,char.type,char.displvl, char.exp, char.money))
+        sys.stdout.write('{} HP:{}/{} Class:{} Lvl:{} EXP:{}/100 Money:{}\n'.format(char.name,char.HP,char.maxHP,char.type.name,char.displvl, char.exp, char.money))
         sys.stdout.write('Str:{} Mag:{} Def:{} Res:{} Skl:{} Spd:{} Lck:{}'.format(char.strength, char.magic, char.defense, char.resist, char.skill, char.speed, char.luck))
         sys.stdout.write('\n')
         if char.equip != None:
             if char.equip.dur == 1:
-                sys.stdout.write('Equipped: {}, which has 1 use.'.format(char.equip.obj.name))
+                sys.stdout.write('Equipped:{}, which has 1 use.'.format(char.equip.obj.name))
             else:
-                sys.stdout.write('Equipped: {}, which has {} uses.'.format(char.equip.obj.name, char.equip.dur))
+                sys.stdout.write('Equipped:{}, which has {} uses.'.format(char.equip.obj.name, char.equip.dur))
         else:
             sys.stdout.write('Equipped: Nothing!')
         sys.stdout.write('\n')
