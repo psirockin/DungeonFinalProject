@@ -17,6 +17,7 @@ class itemwrapper:
             self.accuracy = self.obj.accuracy
             self.critical = self.obj.critical
             self.forgestats = 0
+
 catalog = [
  [
     weapon("Fire","Basic fire tome","Magic",2,90,0,None,None,540,"M",2,45,True),

@@ -18,7 +18,8 @@ from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
  
 #control variables
 capacity = 5
-HERO_MOVEABLE = ['.', '+', '#', '>', '<','?','!']
+HERO_MOVEABLE = ['.', '+', '#', '>', '<','?','!','п']
+NPC_ICONS = ['!','п']
 ENEMY_MOVEABLE = ['.', '+', '#', '>', '<']
 statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
 a = None
@@ -42,7 +43,7 @@ ROOM_WIDTH = (5, 20)
 MIN_SEP = 2
 
 # 10% an enemy will spawn for every move.
-MONSTER_PROB = 0.01
+MONSTER_PROB = 0.1
  
 Room = collections.namedtuple('Room', 'x y width height')
 Point = collections.namedtuple('Point', 'x y')
@@ -757,7 +758,10 @@ def make_level():
 
     #Insert NPC here
     for i in range(len(npcindex)):
-        if current == npcindex[i]:
+        if current == npcindex[i] and checknpc(current).job == "Shopkeeper":
+            npcpoint = generate(level,'п')
+            npcs.append(npcwrapper(npcbase[i], npcpoint.x, npcpoint.y))
+        elif current == npcindex[i]:
             npcpoint = generate(level,'!')
             npcs.append(npcwrapper(npcbase[i], npcpoint.x, npcpoint.y))
     return level
@@ -992,7 +996,7 @@ if __name__ == '__main__':
             elif level[newpos.x][newpos.y] == '?':
                 newitem = True
 
-            elif level[newpos.x][newpos.y] == '!':
+            elif level[newpos.x][newpos.y] in NPC_ICONS:
                 for i in range(len(npcs)):
                     if level[newpos.x][newpos.y] == level[npcs[i].x][npcs[i].y] and direction != None:
                         dothings(char, npcs[i], current)
