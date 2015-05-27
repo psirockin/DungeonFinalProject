@@ -58,7 +58,7 @@ def sell(hero, i):
         return
     for a in range(len(bag) - 1, -1, -1):
         if i.obj == bag[a].obj:
-            hero.money += int(i.obj.cost * .5)
+            hero.money += int(i.obj.cost * .25)
             bag.pop(a)
             return
 

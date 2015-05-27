@@ -1,7 +1,7 @@
 import collections
  
 weapon = collections.namedtuple('weapon', 'name desc subclass attack accuracy critical effect boost cost type range dur shop')
-item = collections.namedtuple('item','name desc req effect cost type dur shop')
+item = collections.namedtuple('item','name desc req effect cost type dur')
  
 class itemwrapper:
     def __init__(self, obj, level, x, y):
