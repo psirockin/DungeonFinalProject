@@ -42,7 +42,7 @@ ROOM_WIDTH = (5, 20)
 MIN_SEP = 2
 
 # 10% an enemy will spawn for every move.
-MONSTER_PROB = 0.1
+MONSTER_PROB = 0.01
  
 Room = collections.namedtuple('Room', 'x y width height')
 Point = collections.namedtuple('Point', 'x y')
@@ -792,7 +792,7 @@ def print_level(level):
                         break
             else:
                 sys.stdout.write(level[i][j])
-        sys.stdout.write('\n')
+        sys.stdout.write('\n') 
  
  
 def read_key():
@@ -856,15 +856,16 @@ if __name__ == '__main__':
  
     char.set_position(find_staircase(levels[current], '<'))
     
-## Initial Inventory for debugging ##############################################
+## Initial Inventory (for debugging) ##############################################
     
     init = []
     init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Sol Katti"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Bronze Sword"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Thunder"), 1, char.position.x, char.position.y))
     for i in range(len(init)):
         bag.append(init[i])
     
-#################################################################################
+###################################################################################
 
     sys.stdout.write("\x1b[2J\x1b[H")
     while True:
@@ -883,7 +884,7 @@ if __name__ == '__main__':
         # level, and then swap back
         old, level[char.position.x][char.position.y] = level[char.position.x][char.position.y], 'Д' #changed @ with Д
         print_level(level)
-        level[char.position.x][char.position.y] = old
+        level[char.position.x][char.position.y] = old               
         if char.displvl == 20:
             sys.stdout.write('{} HP:{}/{} Class:{} Lvl:{} EXP:MAX Money:{}G\n'.format(char.name,char.HP,char.maxHP,char.type.name,char.displvl, char.money))
         else:
@@ -901,6 +902,7 @@ if __name__ == '__main__':
  
         if level[char.position.x][char.position.y] == '?':
             for a in range(len(items)):
+#                print("One item at {}, {} and I'm at {}, {}.".format(items[a].x,items[a].y,char.position.x,char.position.y))
                 if items[a].x == char.position.x and items[a].y == char.position.y:
                     it = items[a]
             if len(bag) < capacity:
@@ -994,7 +996,6 @@ if __name__ == '__main__':
                 for i in range(len(npcs)):
                     if level[newpos.x][newpos.y] == level[npcs[i].x][npcs[i].y] and direction != None:
                         dothings(char, npcs[i], current)
-                print_level(level)
                 
 
             elif level[newpos.x][newpos.y] == 'm':

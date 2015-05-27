@@ -1,7 +1,7 @@
 import collections
  
 weapon = collections.namedtuple('weapon', 'name desc subclass attack accuracy critical effect boost cost type range dur shop')
-item = collections.namedtuple('item','name desc req effect cost type dur')
+item = collections.namedtuple('item','name desc req effect cost type dur shop')
  
 class itemwrapper:
     def __init__(self, obj, level, x, y):
@@ -11,7 +11,12 @@ class itemwrapper:
         self.x = x
         self.y = y
         self.dur = obj.dur
- 
+        if self.obj.type == "W":
+            self.isweapon = True
+            self.attack = self.obj.attack
+            self.accuracy = self.obj.accuracy
+            self.critical = self.obj.critical
+            self.forgestats = 0
 catalog = [
  [
     weapon("Fire","Basic fire tome","Magic",2,90,0,None,None,540,"M",2,45,True),

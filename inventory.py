@@ -9,17 +9,17 @@ bag = []
 def printinv():
     for i in range(len(bag)):
         obj = bag[i]
-        sys.stdout.write("{} {} {}\n".format(i+1, obj.obj.name, obj.dur))
+        sys.stdout.write("{}: {} {}\n".format(i+1, obj.obj.name, obj.dur))
     print("Select a number on screen to do stuff, or input and enter any other key to exit.")
  
-def dothis(hero, a, level, pos, items, moving):
+def dothis(hero, a, level, pos, itemlocs, moving):
     try:
        a = int(a)
     except ValueError:
        return
     if a <= len(bag):
          select = a - 1
-         interact(hero, select, level, pos, items, moving)
+         interact(hero, select, level, pos, itemlocs, moving)
  
 def equip(hero, item):
     if hero.equip != None and hero.equip == item:
@@ -32,30 +32,27 @@ def equip(hero, item):
         print("You can't equip this!")
     time.sleep(1)
 
-def drop(hero, i, level, pos, items):
-    if i == hero.equip:
-        print("Unequip this first.")
-        time.sleep(1)
-        return
+def drop(hero, i, level, pos, itemlocs):
+    if hero.equip != None and i.obj == hero.equip.obj:
+        equip(hero, i)
     index = [-1,0,1]
     for a in range(3):
         for b in range(3):
             if level[pos.x+index[a]][pos.y+index[b]] == '.' and a != 1 and b != 1:
                 level[pos.x+index[a]][pos.y+index[b]] = i
-                level[pos.x+index[a]][pos.y+index[b]] = '?'
-                items.append(i)
-                bag.remove(i)
+                level[pos.x+index[a]][pos.y+index[b]] = '?'                
                 i.level = level
-                i.x = pos.x
-                i.y = pos.y
+                i.x = pos.x + index[a]
+                i.y = pos.y + index[b]
+#                print("This is at {}, {}.".format(i.x,i.y))
+                itemlocs.append(i)
+                bag.remove(i)
                 return
     print("No dropping locations available.")
 
 def sell(hero, i):
     if hero.equip != None and i.obj == hero.equip.obj:
-        print("Unequip this first.")
-        time.sleep(1)
-        return
+        equip(hero, i)
     for a in range(len(bag) - 1, -1, -1):
         if i.obj == bag[a].obj:
             hero.money += int(i.obj.cost * .25)
@@ -67,7 +64,7 @@ def update():
         if bag[a].dur <= 0:
             bag.pop(a)
  
-def interact(hero, c, level, pos, items, moving):
+def interact(hero, c, level, pos, itemlocs, moving):
         a = '3'
         obj = bag[c]
         while a == '3':
@@ -110,7 +107,7 @@ def interact(hero, c, level, pos, items, moving):
                 moving = False
                 time.sleep(2)
             elif a == '4':
-                drop(hero, obj, level, pos, items)
+                drop(hero, obj, level, pos, itemlocs)
                 moving = True
             elif a == '5':
                 sell(hero, obj)
