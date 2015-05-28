@@ -8,7 +8,7 @@ unit = collections.namedtuple('unit', 'name weapons base classes basestats maxim
 data = [
 [
 unit("Tactician", ["Sword", "Magic"], [40, 15, 15, 15, 15, 0, 10, 10],["Grandmaster"],[16,4,3,5,5,0,5,3],[60,25,25,25,25,30,25,25]),
-unit("Cavalier", ["Sword", "Lance"], [45, 20, 0, 20, 20, 0, 10, 5],["Great Knight","Paladin"],[18,6,0,5,6,7,0],[60,26,20,25,25,30,26,26]),
+unit("Cavalier", ["Sword", "Lance"], [45, 20, 0, 20, 20, 0, 10, 5],["Great Knight","Paladin"],[18,6,0,5,6,0,7,0],[60,26,20,25,25,30,26,26]),
 unit("Mercenary", ["Sword"], [45, 20, 0, 25, 20, 0, 10, 5],["Hero","Bow Knight"],[18,5,0,8,7,0,5,0],[60,26,20,28,26,30,25,23]),
 unit("Myrmidon", ["Sword"], [40,20,0,25,25,0,5,5],["Swordmaster","Assassin"],[16,4,1,9,10,0,4,1],[60,24,22,27,28,30,22,24]),
 unit("Archer",["Bow"],[45,15,0,30,15,0,10,5],["Sniper","Bow Knight"],[16,5,0,8,6,0,5,0],[60,26,20,29,25,30,25,21]),
@@ -16,12 +16,13 @@ unit("Thief",["Sword"],[35,15,5,25,25,0,5,5],["Assassin","Trickster"],[16,3,0,6,
 unit("Mage",["Magic"],[35,0,20,20,20,0,5,10],["Sage","Dark Knight"],[16,0,4,3,4,0,2,3],[60,20,28,27,26,30,21,25]),
 unit("Wyvern Rider",["Axe"],[45,30,0,15,15,0,10,5],["Wyvern Lord","Griffon Rider"],[19,7,0,6,5,0,8,0],[60,28,20,24,24,30,28,20]),
 unit("Knight",["Lance"],[50,25,0,15,10,0,15,5],["General","Great Knight"],[18,8,0,4,2,0,11,0],[60,30,20,26,23,30,0,30,22]),
-unit("Dark Mage",["Magic"],[50,5,15,15,15,0,10,10],["Sorcerer","Dark Knight"],[18,1,3,2,3,0,4,4],[60,20,27,25,25,30,25,27])
+unit("Dark Mage",["Magic"],[50,5,15,15,15,0,10,10],["Sorcerer","Dark Knight"],[18,1,3,2,3,0,4,4],[60,20,27,25,25,30,25,27]),
+unit("Fighter",["Axe"],[45,25,0,20,15,0,10,5],["Hero","Warrior"],[20,8,0,5,5,0,4,0],[60,29,20,26,25,30,25,23])
 ]
 ,
 [
 unit("Grandmaster", ["Sword", "Magic"], [40, 15, 15, 15, 15, 0, 10, 10],None,[20,7,6,7,7,0,7,5],[80,40,40,40,40,45,40,40]),
-unit("Paladin", ["Sword", "Lance"], [45, 20, 0, 20, 20, 10, 10],None,[25,9,1,7,8,0,10,6],[80,42,30,40,40,45,42,42]),
+unit("Paladin", ["Sword", "Lance"], [45, 20, 0, 20, 20, 0,10, 10],None,[25,9,1,7,8,0,10,6],[80,42,30,40,40,45,42,42]),
 unit("Great Knight",["Sword","Lance","Axe"],[50,25,0,15,15,0,15,5],None,[26,11,0,6,5,0,14,1],[80,48,20,34,37,45,48,30]),
 unit("Hero", ["Sword", "Axe"], [45, 20, 0, 25, 20, 0, 10, 5],None,[22,8,1,11,10,0,8,3],[80,50,30,41,35,45,50,35]),
 unit("Swordmaster",["Sword"],[40,20,0,25,25,0,5,10],None,[20,7,2,11,13,0,6,4],[80,38,34,44,46,45,33,38]),
@@ -50,3 +51,26 @@ def ispromote(theclass):
         for j in range(len(data[i])):
             if theclass == data[i][j].name:
                 return i
+
+def getbase(theclass):
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            if theclass == data[i][j].name:
+                return data[i][j].basestats
+
+def getmax(theclass):
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            if theclass == data[i][j].name:
+                return data[i][j].maximum
+
+#Debug tool
+def paramcheck():
+    bug = False
+    for i in range(len(data)):
+        for j in range(len(data)):
+            if len((data[i][j]).base) != 8 or len((data[i][j]).basestats) != 8 or len((data[i][j]).maximum) != 8:
+                print("Something is not right with {}.".format(data[i][j].name))
+                bug = True
+    if not bug:
+        print("Test passed.")

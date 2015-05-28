@@ -20,42 +20,42 @@ class itemwrapper:
 
 catalog = [
  [
-    weapon("Fire","Basic fire tome","Magic",2,90,0,None,None,540,"M",2,45,True),
-    weapon("Thunder","Basic thunder tome","Magic",3,80,5,None,None,630,"M",2,45,True),    
-    weapon("Wind","Basic wind tome","Magic",1,100,0,None,None,450,"M",2,45,True),
-    weapon("Flux","Basic dark tome","Magic",5,70,0,None,None,540,"M",2,45,True),
-    weapon("Bronze Sword","Novice sword","Sword",3,100,0,None,None,350,"W",1,50,True),
+    weapon("Fire","Basic fire tome.","Magic",2,90,0,None,None,540,"M",2,45,True),
+    weapon("Thunder","Basic thunder tome.","Magic",3,80,5,None,None,630,"M",2,45,True),    
+    weapon("Wind","Basic wind tome.","Magic",1,100,0,None,None,450,"M",2,45,True),
+    weapon("Flux","Basic dark tome.","Magic",5,70,0,None,None,540,"M",2,45,True),
+    weapon("Bronze Sword","Novice sword.","Sword",3,100,0,None,None,350,"W",1,50,True),
     weapon("Rapier","Slender and regal.","Sword",5,90,10,None,None,1600,"W",1,35,False),
     weapon("Tree Branch","lol","Sword",1,100,0,None,None,100,"W",1,20,False),
     weapon("Dying Blaze","Strong but breaks easily.","Magic",10,75,0,None,None,600,"M",2,3,False),
-    item("Vulnerary","Basic healing potion",None,10,300,"H",3,True)
+    item("Vulnerary","Basic healing potion.",None,10,300,"H",3,True)
 ],
 [
-    weapon("Elfire","Upgraded fire tome","Magic",5,85,0,None,None,980,"M",2,35,True),
-    weapon("Elthunder","Upgraded thunder tome","Magic",6,75,5,None,None,1050,"M",2,35,True),
-    weapon("Elwind","Upgraded wind tome","Magic",4,95,0,None,None,910,"M",2,35,True),
+    weapon("Elfire","Upgraded fire tome.","Magic",5,85,0,None,None,980,"M",2,35,True),
+    weapon("Elthunder","Upgraded thunder tome.","Magic",6,75,5,None,None,1050,"M",2,35,True),
+    weapon("Elwind","Upgraded wind tome.","Magic",4,95,0,None,None,910,"M",2,35,True),
     weapon("Nosferatu","Heal half of the given damage","Magic",7,65,10,"Drain",None,980,"M",2,20,True),
-    weapon("Iron Sword","Basic sword","Sword",5,95,0,None,None,520,"W",1,40,True),
+    weapon("Iron Sword","Basic sword.","Sword",5,95,0,None,None,520,"W",1,40,True),
     weapon("Roy's Blade","A junior lord's blade.","Sword",8,95,5,None,None,900,"W",1,25,False)
 ],
  [
-    weapon("Arcfire","Rare fire tome","Magic",8,80,0,None,None,1440,"M",2,30,True),
-    weapon("Arcthunder","Rare thunder tome","Magic",10,70,10,None,None,1620,"M",2,30,True),
-    weapon("Arcwind","Rare wind tome","Magic",6,90,0,None,None,1320,"M",2,30,True),
+    weapon("Arcfire","Uncommon fire tome.","Magic",8,80,0,None,None,1440,"M",2,30,True),
+    weapon("Arcthunder","Uncommon thunder tome.","Magic",10,70,10,None,None,1620,"M",2,30,True),
+    weapon("Arcwind","Uncommon wind tome.","Magic",6,90,0,None,None,1320,"M",2,30,True),
     weapon("Celica's Gale","Attack twice!","Magic",4,80,0,"Brave",None,1720,"M",2,20,False),
     weapon("Ruin","High crit!","Magic",4,65,50,None,None,1380,"M",2,20,True),
     weapon("Steel Sword","Good sword","Sword",8,90,0,None,None,840,"W",1,30,True),
     weapon("Noble Rapier","Elegant but deadly.","Sword",8,85,10,None,None,2100,"W",1,25,False),
     weapon("Killing Edge","High crit!","Sword",9,90,30,None,None,1470,"W",1,30,True),
     weapon("Eirika's Blade","Attack twice!","Sword",6,95,10,"Brave",None,1220,"W",1,20,False),
-    item("Concoction","Good healing potion",None,20,600,"H",3,True)
+    item("Concoction","Good healing potion.",None,20,600,"H",3,True)
 ],
  [
-    weapon("Bolganone","Advanced fire tome","Magic",12,75,0,None,None,2000,"M",2,25,True),
-    weapon("Thoron","Advanced thunder tome","Magic",14,65,10,None,None,2200,"M",2,25,True),
-    weapon("Rexcalibur","Advanced wind tome","Magic",10,85,0,None,None,1900,"M",2,25,True),    
-    weapon("Silver Sword","Somewhat rare sword","Sword",9,80,0,None,None,2100,"W",1,30,True),
-    item("Elixir","Great healing potion",None,99,900,"H",3,True),
+    weapon("Bolganone","Rare fire tome.","Magic",12,75,0,None,None,2000,"M",2,25,True),
+    weapon("Thoron","Rare thunder tome.","Magic",14,65,10,None,None,2200,"M",2,25,True),
+    weapon("Rexcalibur","Rare wind tome.","Magic",10,85,0,None,None,1900,"M",2,25,True),    
+    weapon("Silver Sword","Somewhat rare sword.","Sword",9,80,0,None,None,2100,"W",1,30,True),
+    item("Elixir","Great healing potion.",None,99,900,"H",3,True),
     item("Master Seal","Use this to promote yourself. Level 10+ only.",10,None,10000,"C",1,True),
     item("Second Seal","Use this to reclass yourself. Level 10+ only.",10,None,10000,"C",1,True)
 ],

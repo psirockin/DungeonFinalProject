@@ -2,15 +2,34 @@ import time
 import sys
 import math
 from item import weapon
+import tty
+import termios
+
+def read_key():
+    '''
+    Read a single key from stdin
+    '''
+    try:
+        fd = sys.stdin.fileno()
+        tty_settings = termios.tcgetattr(fd)
+        tty.setraw(fd)
  
+        key = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, tty_settings)
+    return key
+
 # Mitsunari-san's inventory
 bag = []
  
-def printinv():
+def printinv(char, level, pos, itemlocs, didyoumove):
+    sys.stdout.write("\x1b[2J\x1b[H")    
     for i in range(len(bag)):
         obj = bag[i]
         sys.stdout.write("{}: {} {}\n".format(i+1, obj.obj.name, obj.dur))
     print("Select a number on screen to do stuff, or input and enter any other key to exit.")
+    k = read_key()
+    dothis(char, k, level, pos, itemlocs, didyoumove)
  
 def dothis(hero, a, level, pos, itemlocs, moving):
     try:
@@ -44,7 +63,7 @@ def drop(hero, i, level, pos, itemlocs):
                 i.level = level
                 i.x = pos.x + index[a]
                 i.y = pos.y + index[b]
-#                print("This is at {}, {}.".format(i.x,i.y))
+#               print("This is at {}, {}.".format(i.x,i.y))
                 itemlocs.append(i)
                 bag.remove(i)
                 return
@@ -69,9 +88,9 @@ def interact(hero, c, level, pos, itemlocs, moving):
         obj = bag[c]
         while a == '3':
             sys.stdout.write("\x1b[2J\x1b[H")
-            print("What would you like to do with {}? Input number and enter.".format(obj.obj.name))
-            print(" 1.Un/equip\n 2.Use\n 3.Info\n 4.Drop \n 5.Sell")
-            a = input()
+            print("What would you like to do with {}? Input number.".format(obj.obj.name))
+            print(" 1.Un/equip\n 2.Use\n 3.Info\n 4.Drop \n 5.Sell\n 6.Back")
+            a = read_key()
             if a == '1':
                 if isinstance(obj.obj, weapon) == False:
                     print("You can't equip that!")
@@ -111,4 +130,6 @@ def interact(hero, c, level, pos, itemlocs, moving):
                 moving = True
             elif a == '5':
                 sell(hero, obj)
+            elif a == '6':
+                printinv(hero, level, pos, itemlocs, moving)
 

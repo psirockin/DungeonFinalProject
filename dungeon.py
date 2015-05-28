@@ -2,7 +2,7 @@
  
 import itemsys
 import help
-from inventory import bag, printinv, dothis, update
+from inventory import bag, printinv, update
 import collections
 import copy
 import random
@@ -12,11 +12,11 @@ import tty
 import time
 import item
 import math
-from units import data, setclass, ispromote
+from units import data, setclass, ispromote, getbase, getmax, paramcheck
 from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
-
  
 #control variables
+current = 0
 capacity = 5
 HERO_MOVEABLE = ['.', '+', '#', '>', '<','?','!','п']
 NPC_ICONS = ['!','п']
@@ -53,9 +53,12 @@ monsters = []
 npcs = []
  
 MONSTERS = [
-    ['Archer', 'a', [16, 5, 0, 3, 4, 0, 6, 0], [80, 20, 0, 30, 30, 0, 20, 10]],
-    ['Fighter', 'f', [20, 5, 0, 1, 7, 0, 3, 0], [90, 50, 0, 30, 20, 0, 50, 5]],
-    ['Mercenary', 'm', [16, 4, 0, 8, 10, 0, 5, 0], [80, 30, 0, 20, 20, 0, 30, 10]],
+#Bases are taken from Awakening while growths are taken from Shadow Dragon to balance out the poor bases
+    ['Archer', 'a', [80, 20, 0, 30, 30, 0, 20, 10]],
+    ['Fighter', 'f', [90, 50, 0, 30, 20, 0, 50, 5]],
+    ['Mercenary', 'm', [80, 30, 0, 20, 20, 0, 30, 10]],
+    ['Cavalier', 'c', [80,35,0,30,20,0,30,10]],
+    ['Myrmidon', 't', [80,20,0,30,30,0,20,10]]
 ]
  
 ####################
@@ -66,8 +69,17 @@ class Monster:
         self.name = name
         self.what = what
         self.stats = base
-        self.HP = self.stats[0]
+        self.max = getmax(self.name)
+        self.lvl = SuitableLvl * 2
+        self.growth = growths
+        self.equip = None
+        self.old = '.' # monsters always spawn on a '.'
+        self.setstats()
+        self.bonuses()
+
+    def setstats(self):
         self.maxHP = self.stats[0]
+        self.HP = self.stats[0]
         self.strength = self.stats[1]
         self.magic = self.stats[2]
         self.skill = self.stats[3]
@@ -75,10 +87,12 @@ class Monster:
         self.luck = self.stats[5]
         self.defense = self.stats[6]
         self.resist = self.stats[7]
-        self.lvl = SuitableLvl * 2
-        self.growth = growths
-        self.equip = None
-        self.old = '.' # monsters always spawn on a '.'
+
+    def bonuses(self):
+        difficulty = int((current + 1) / 4)
+        for i in range(len(self.stats)):
+            self.stats[i] += 3 * difficulty
+        self.setstats() 
  
     def move(self, level, newpos):
         level[self.pos.x][self.pos.y] = self.old
@@ -88,33 +102,21 @@ class Monster:
     
     def lvlchange(self): # 1 level higher or lower than base   
         r = random.randrange(3)
-        if r == 1:
+        if r == 1 and self.lvl > 1:
             self.lvl -= 1
-        elif r == 2:
+        elif r == 2 and self.lvl < 20:
             self.lvl += 1
 
     def die(self, level):
         level[self.pos.x][self.pos.y] = self.old
             
     def grow(self, lvl): #These growth rates are automated.
-        for i in range(lvl):
-            g = random.randrange(100)
-            if g <= self.growth[0]:
-                self.HP += 1
-            if g <= self.growth[1]:
-                self.strength += 1
-            if g <= self.growth[2]:
-                self.magic += 1
-            if g <= self.growth[3]:
-                self.skill += 1
-            if g <= self.growth[4]:
-                self.speed += 1
-            if g <= self.growth[5]:
-                self.luck += 1
-            if g <= self.growth[6]:
-                self.defense += 1
-            if g <= self.growth[7]:
-                self.resist += 1
+        for c in range(lvl):
+            for i in range(len(self.stats)):
+                g = random.randrange(100)
+                if g <= self.growth[i] and self.stats[i] < self.max[i]:
+                    self.stats[i] += 1
+            self.setstats()
     
     def howtoattack(self,target):
         if self.equip == None:
@@ -660,12 +662,15 @@ def create_path(level, p0, p1):
         level[p.x][p.y] = old
  
     return False
+
+def surroundings(level, point): #Let's not block corridors. Seriously.
+    return [level[point.x-1][point.y], level[point.x+1][point.y], level[point.x][point.y-1], level[point.x][point.y+1]]
  
 def generate(level, item):
     points = []
     for j in range(1, len(level)):
         for i in range(1, len(level[0])):
-            if level[j][i] == ".":
+            if level[j][i] == "." and '+' not in surroundings(level, Point(j, i)):
                 points.append(Point(j, i))
     if len(points) == 0:
         return False
@@ -822,7 +827,7 @@ def read_key():
 if __name__ == '__main__':
     
     loadnpc()
-
+#   paramcheck() 
     # Initialize the first level
     current = 0
  
@@ -897,9 +902,9 @@ if __name__ == '__main__':
         sys.stdout.write('\n')
         if char.equip != None:
             if char.equip.dur == 1:
-                sys.stdout.write('Equipped:{}, which has 1 use.'.format(char.equip.name))
+                sys.stdout.write('Equipped: {}, which has 1 use.'.format(char.equip.name))
             else:
-                sys.stdout.write('Equipped:{}, which has {} uses.'.format(char.equip.name, char.equip.dur))
+                sys.stdout.write('Equipped: {}, which has {} uses.'.format(char.equip.name, char.equip.dur))
         else:
             sys.stdout.write('Equipped: Nothing!')
         sys.stdout.write('\n')
@@ -949,10 +954,8 @@ if __name__ == '__main__':
                 continue
             else:
                 direction = None
-                sys.stdout.write("\x1b[2J\x1b[H")
-                printinv()
-                k = input()
-                dothis(char, k, level, char.position, items, didyoumove)
+                didyoumove = False
+                printinv(char, level, char.position, items, didyoumove)
                 print_level(level)
         else:
             continue
@@ -966,7 +969,8 @@ if __name__ == '__main__':
                     p = generate(level,'m')
                     if p:
                         m1 = MONSTERS[random.randrange(len(MONSTERS))]
-                        m = Monster(p,m1[0],m1[1],m1[2],m1[3])
+                        print("Making a {}".format(m1[0]))
+                        m = Monster(p,m1[0],m1[1],getbase(m1[0]),m1[2])
                         m.lvlchange()
                         m.grow(m.lvl)
                         monsters.append(m)
