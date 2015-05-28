@@ -141,5 +141,5 @@ def buildquote(quote, words):
     return final
 shopquotes = [
 ["なにを差し上げる?","*の値段は...*Gぐらいだよ。買う？","なにを売る？","これ、*を上げられる。","じゃあ、どうぞ！*だよ！","残念。Gが足りないよ。","じゃあ、またどうぞ！"],
-[],
-[]]
+["What can I help ya with?","*'ll be worth *G. Gonna buy?","What ya sellin'?","I'll give ya *G.","Here ya go! *!","Sorry, ya don't have 'nuff money.","Come again, y'hear?"],
+["Need a... hand? -holds out hand-","Aye, this is worth *G. How about it?","Item for gold? That's gold.","This is worth *G.","Here, *!","Huh? What's that? You need more money.","Come again!"]]

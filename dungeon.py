@@ -14,19 +14,27 @@ import item
 import math
 from units import data, setclass, ispromote, getbase, getmax, paramcheck
 from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
+
+################################################################
+#                   TODO:
+# Implement a skill system.
+# Implement ranged attacks.
+# Implement a convoy system with 5 extra spaces?
+# Somehow edit the attack system to accomodate Astra.
+# Add more NPCs. This includes a blacksmith and an alchemist.
+#
+#
+################################################################
+
  
 #control variables
 current = 0
-capacity = 5
-HERO_MOVEABLE = ['.', '+', '#', '>', '<','?','!','п']
-NPC_ICONS = ['!','п']
+capacity = 5 #standard for weapons as well as skills
+HERO_MOVEABLE = ['.', '+', '#', '>','<','?']
+NPC_ICONS = ['!','п','*']
 ENEMY_MOVEABLE = ['.', '+', '#', '>', '<']
 statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
-a = None
-f = None
 direction = None
-Equip = None
-SuitableLvl = 1
  
 # Dimensions of the dungeon
 X_DIM = 80
@@ -43,7 +51,7 @@ ROOM_WIDTH = (5, 20)
 MIN_SEP = 2
 
 # 10% an enemy will spawn for every move.
-MONSTER_PROB = 0.1
+MONSTER_PROB = 0.01
  
 Room = collections.namedtuple('Room', 'x y width height')
 Point = collections.namedtuple('Point', 'x y')
@@ -54,11 +62,16 @@ npcs = []
  
 MONSTERS = [
 #Bases are taken from Awakening while growths are taken from Shadow Dragon to balance out the poor bases
+[
     ['Archer', 'a', [80, 20, 0, 30, 30, 0, 20, 10]],
     ['Fighter', 'f', [90, 50, 0, 30, 20, 0, 50, 5]],
     ['Mercenary', 'm', [80, 30, 0, 20, 20, 0, 30, 10]],
     ['Cavalier', 'c', [80,35,0,30,20,0,30,10]],
     ['Myrmidon', 't', [80,20,0,30,30,0,20,10]]
+],
+[
+    
+]
 ]
  
 ####################
@@ -70,7 +83,7 @@ class Monster:
         self.what = what
         self.stats = base
         self.max = getmax(self.name)
-        self.lvl = SuitableLvl * 2
+        self.lvl = current + 1
         self.growth = growths
         self.equip = None
         self.old = '.' # monsters always spawn on a '.'
@@ -91,7 +104,7 @@ class Monster:
     def bonuses(self):
         difficulty = int((current + 1) / 4)
         for i in range(len(self.stats)):
-            self.stats[i] += 3 * difficulty
+            self.stats[i] += 2 * difficulty
         self.setstats() 
  
     def move(self, level, newpos):
@@ -160,8 +173,8 @@ class Monster:
                     sys.stdout.write("CRITICAL! " )
                     damage *= 3
                 target.HP -= damage
-                if weapon.obj.effect == "Drain":
-                    heal(damage / 2)
+                if weapon.obj.effect == "Drain": 
+                    self.heal(int(damage * .5))                    
             elif weapon.obj.type == "M":
                 damage += self.magic + weapon.obj.attack - target.resist
                 if damage <= 0:
@@ -171,7 +184,8 @@ class Monster:
                     damage *= 3
                 target.HP -= damage
                 if weapon.obj.effect == "Drain":
-                    self.heal(math.floor(damage / 2))
+                    self.heal(int(damage * .5))
+        weapon.dur -= 1
         return damage
 
     def heal(self,amount):
@@ -204,6 +218,7 @@ class hero:
         self.bag = bag
         self.equip = None
         self.skillset = []
+        self.inactiveskills = []
  
     def expgain(self,exp):
         self.exp += exp
@@ -249,6 +264,20 @@ class hero:
         if gain == False:
             sys.stdout.write("Sadly, no stats were gained this time.\n")
         self.setstats()
+
+    def autogrow(self):        
+        if self.culmlvl == 0:
+            return
+        sys.stdout.write("More promotion bonuses~")
+        for i in range(len(self.default)): #Used for large promotion bonuses for those who already reclassed for who knows what.
+            gains = 0
+            for c in range(self.culmlvl): 
+                g = random.randrange(100)
+                if g <= self.default[i] and self.stats[i] < self.max[i]:
+                    self.stats[i] += 1
+                    gains += 1
+            sys.stdout.write("Gained {} {}.\n".format(gains, statread[i]))
+        time.sleep(1)
  
     def assetmod(self,a):
         if a == 0:
@@ -413,6 +442,7 @@ class hero:
             c = 0      
         target = self.type.classes[c]
         self.promoted = 20
+        self.autogrow()
         self.editstats(target)
 
     def reclass(self):
@@ -665,6 +695,9 @@ def create_path(level, p0, p1):
 
 def surroundings(level, point): #Let's not block corridors. Seriously.
     return [level[point.x-1][point.y], level[point.x+1][point.y], level[point.x][point.y-1], level[point.x][point.y+1]]
+
+def makepoints(level, point):
+    return [Point(point.x-1,point.y), Point(point.x+1,point.y), Point(point.x,point.y-1), Point(point.x,point.y+1)]
  
 def generate(level, item):
     points = []
@@ -677,6 +710,15 @@ def generate(level, item):
     p = random.choice(points)
     level[p.x][p.y] = item
     return p
+
+def place(level, point, item): #Use this to place an object next to a an object dependent on point.
+    p = random.randrange(4)
+    points = makepoints(level, point)
+    while '.' not in level[points[p].x][points[p].y] and '+' not in surroundings(points[p]):
+        p = random.randrange(4)
+    final = points[p]
+    level[final.x][final.y] = item
+    return final
  
 def add_to_floor(level, room, item):
     '''
@@ -762,13 +804,24 @@ def make_level():
     add_to_floor(level, down, '>')
 
     #Insert NPC here
-    for i in range(len(npcindex)):
-        if current == npcindex[i] and checknpc(current).job == "Shopkeeper":
+    npcpoint = None
+    npclist = checknpc(current)
+    for i in range(len(npclist)):
+        if npclist[i].job == "Shopkeeper":
+            print("Making shop...")
             npcpoint = generate(level,'п')
-            npcs.append(npcwrapper(npcbase[i], npcpoint.x, npcpoint.y))
-        elif current == npcindex[i]:
+            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
+        elif npclist[i].job == "Healer":
+            if npcpoint != None:
+                print("This will be next to shop.")
+                npcpoint = place(level,npcpoint,'*')
+            else:
+                print("There is no shop on this floor.")
+                npcpoint = generate(level,'*')
+            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))            
+        else:
             npcpoint = generate(level,'!')
-            npcs.append(npcwrapper(npcbase[i], npcpoint.x, npcpoint.y))
+            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
     return level
 
     
@@ -967,11 +1020,15 @@ if __name__ == '__main__':
 
             if random.random() < MONSTER_PROB:
                     p = generate(level,'m')
+                    which = 0
                     if p:
-                        m1 = MONSTERS[random.randrange(len(MONSTERS))]
-                        print("Making a {}".format(m1[0]))
+                        if current >= 20:
+                            which = 1
+                        m1 = MONSTERS[which][random.randrange(len(MONSTERS))]
+                        #print("Making a {}".format(m1[0])) #debug
                         m = Monster(p,m1[0],m1[1],getbase(m1[0]),m1[2])
                         m.lvlchange()
+                        #print("It is level {}".format(m.lvl)) #debug
                         m.grow(m.lvl)
                         monsters.append(m)
      
@@ -1003,6 +1060,7 @@ if __name__ == '__main__':
             elif level[newpos.x][newpos.y] in NPC_ICONS:
                 for i in range(len(npcs)):
                     if level[newpos.x][newpos.y] == level[npcs[i].x][npcs[i].y] and direction != None:
+                        print("You are standing on a {}".format(npcs[i].i.job))
                         dothings(char, npcs[i], current)
                 
 
@@ -1024,7 +1082,7 @@ if __name__ == '__main__':
                             target = m             
                 newpos = char.position
 
-            elif level[newpos.x][newpos.y] not in HERO_MOVEABLE:
+            elif level[newpos.x][newpos.y] not in HERO_MOVEABLE and level[newpos.x][newpos.y] not in NPC_ICONS:
                 # Hit a wall, should stay put
                 newpos = char.position
      
@@ -1050,6 +1108,9 @@ if __name__ == '__main__':
                             # Monster moves into player, attack!
                             d = m.howtoattack(char)
                             sys.stdout.write('{} took {} damage from {}.\n'.format(char.name,d, m.name))
+                            if m.equip != None and m.equip.dur > 0 and m.equip.obj.effect == "Brave" and char.HP > 0:
+                                d = char.howtoattack(m)
+                                sys.stdout.write('ATTACK AGAIN! {} took {} damage from {}.\n'.format(char.name,d, m.name))
                             wait = True
                         elif level[p.x][p.y] in ENEMY_MOVEABLE and d1 < d0:
                             m.move(level, p)
