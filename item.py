@@ -1,6 +1,6 @@
 import collections
  
-weapon = collections.namedtuple('weapon', 'name desc subclass attack accuracy critical effect boost cost type range dur shop')
+weapon = collections.namedtuple('weapon', 'name desc school attack accuracy critical effect boost cost type range dur shop')
 item = collections.namedtuple('item','name desc req effect cost type dur shop')
  
 class itemwrapper:
@@ -11,12 +11,12 @@ class itemwrapper:
         self.x = x
         self.y = y
         self.dur = obj.dur
-        if self.obj.type == "W":
+        if self.obj.type == "W" or self.obj.type == "M":
             self.isweapon = True
             self.attack = self.obj.attack
             self.accuracy = self.obj.accuracy
             self.critical = self.obj.critical
-            self.forgestats = 0
+            self.forgestats = [0,0,0] #Attack, accuracy and crit. These values will never exceed 5.
 
 catalog = [
  [

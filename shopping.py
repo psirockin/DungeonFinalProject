@@ -3,6 +3,7 @@ import time
 from item import catalog, itemwrapper
 import tty
 import termios
+import inventory
 
 def read_key():
     '''
@@ -18,7 +19,7 @@ def read_key():
         termios.tcsetattr(fd, termios.TCSADRAIN, tty_settings)
     return key
 
-def shop(hero, npc, level):       
+def shop(hero, npc):       
     i = 0
     while i != '3':
         sys.stdout.write("\x1b[2J\x1b[H")
@@ -27,15 +28,15 @@ def shop(hero, npc, level):
         print(shopquotes[npc.i.level][0])
         i = read_key()
         if i == '1':
-            buy(hero,npc,level)
+            buy(hero,npc)
         elif i == '2':
-            sell(hero,npc,level)
+            sell(hero,npc)
         elif i == '3':
             print(shopquotes[npc.i.level][len(shopquotes[npc.i.level]) - 1])
             time.sleep(1)
             break
 
-def buy(hero,npc,level):    
+def buy(hero,npc):    
     if len(hero.bag) >= 5:
             print("Bag is too full.")
             time.sleep(1)
@@ -83,7 +84,7 @@ def buy(hero,npc,level):
         time.sleep(1)
     return
 
-def sell(hero,npc,level):
+def sell(hero,npc):
     if len(hero.bag) == 0:
         print("Bag is empty!")
         time.sleep(1)
@@ -122,7 +123,7 @@ def sell(hero,npc,level):
             return
         elif choose == 'y':
             if hero.equip != None and hero.bag[select].obj == hero.equip.obj:
-                equip(hero, i)
+                inventory.unequip(hero, hero.bag[select])
             print(buildquote(shopquotes[npc.i.level][4],[printsum]))
             hero.money += sell
             hero.bag.pop(select)

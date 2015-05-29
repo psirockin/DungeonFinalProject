@@ -1,9 +1,10 @@
 import collections
 import shopping
+import blacksmith
 import tty
-import termios
-import sys
 import time
+import sys
+import termios
 
 def read_key():
     '''
@@ -34,22 +35,24 @@ npcbase = [
 npc("誠","Shopkeeper","あ、いらっしゃい！ここは初心者のショップだよ！",[0],0),
 npc("Jin","Shopkeeper","'Sup! Welcome to my shop! Y'can find decent goods here.",[6],1),
 npc("Aku","Shopkeeper","Oh, welcome. I have some slightly better goods.",[13],2),
-npc("Jadine","Healer","If you are injured, 300G will heal you right up.",[0,4,8,12,16,20,24,28,32,36],0)
+npc("Jadine","Healer","If you are injured, 300G will heal you right up.",[0,4,8,12,16,20,24,28,32,36],0),
+#npc("Christopher","Alchemist","Gather items to make better items.",[255],0),
+npc("Wolf","Blacksmith","Welcome! I'll enchant your weapons for a fair price!",[255],0)
 ]
 
 def loadnpc():
     for i in range(len(npcbase)):
         npcindex.append(npcbase[i].floor)
-    print(npcindex)
+#    print(npcindex) #debug
 
 def checknpc(floor):
     npcs = []
     for i in range(len(npcbase)):
         for j in range(len(npcbase[i].floor)):
-            if floor == npcbase[i].floor[j]:
+            if floor == npcbase[i].floor[j] or npcbase[i].floor[j] == 255:
                 npcs.append(npcbase[i])
     for i in range(len(npcs)):
-        print("{} should be in this level.".format(npcs[i].name))
+        print("{} should be in this level.".format(npcs[i].name)) #debug
     return npcs
 
 def healer(hero, npc):
@@ -84,6 +87,8 @@ def healer(hero, npc):
 
 def dothings(hero, npc, level):
     if npc.i.job == "Shopkeeper":
-        shopping.shop(hero, npc, level)
+        shopping.shop(hero, npc)
     elif npc.i.job == "Healer":
         healer(hero, npc)
+    elif npc.i.job == "Blacksmith" and len(hero.bag) != 0:
+        blacksmith.forge(hero, npc)

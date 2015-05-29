@@ -31,7 +31,7 @@ from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 current = 0
 capacity = 5 #standard for weapons as well as skills
 HERO_MOVEABLE = ['.', '+', '#', '>','<','?']
-NPC_ICONS = ['!','п','*']
+NPC_ICONS = ['!','п','*','г']
 ENEMY_MOVEABLE = ['.', '+', '#', '>', '<']
 statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
 direction = None
@@ -155,8 +155,8 @@ class Monster:
 
     def attacking(self, weapon, target, damage):
         miss = False
-        critical = (random.randrange(100) <= weapon.obj.critical + self.skill / 2)
-        accuracy = weapon.obj.accuracy + (self.skill * 3 + self.luck) / 2
+        critical = (random.randrange(100) <= weapon.critical + self.skill / 2)
+        accuracy = weapon.accuracy + (self.skill * 3 + self.luck) / 2
         ############ These are all skill checks
             
 
@@ -166,7 +166,7 @@ class Monster:
             miss = True
         if miss == False:
             if weapon.obj.type == "W":
-                damage += self.strength + weapon.obj.attack - target.defense
+                damage += self.strength + weapon.attack - target.defense
                 if damage <= 0:
                     damage = 1
                 if critical:
@@ -176,7 +176,7 @@ class Monster:
                 if weapon.obj.effect == "Drain": 
                     self.heal(int(damage * .5))                    
             elif weapon.obj.type == "M":
-                damage += self.magic + weapon.obj.attack - target.resist
+                damage += self.magic + weapon.attack - target.resist
                 if damage <= 0:
                     damage = 1
                 if critical:
@@ -503,8 +503,8 @@ class hero:
 
     def attacking(self, weapon, target, damage):
         miss = False
-        critical = (random.randrange(100) <= weapon.obj.critical + self.skill / 2)
-        accuracy = weapon.obj.accuracy + (self.skill * 3 + self.luck) / 2
+        critical = (random.randrange(100) <= weapon.critical + self.skill / 2)
+        accuracy = weapon.accuracy + (self.skill * 3 + self.luck) / 2
         ############ These are all skill checks
             
 
@@ -514,7 +514,7 @@ class hero:
             miss = True
         if miss == False:
             if weapon.obj.type == "W":
-                damage += self.strength + weapon.obj.attack - target.defense
+                damage += self.strength + weapon.attack - target.defense
                 if damage <= 0:
                     damage = 1
                 if critical:
@@ -524,7 +524,7 @@ class hero:
                 if weapon.obj.effect == "Drain": 
                     self.heal(int(damage * .5))                    
             elif weapon.obj.type == "M":
-                damage += self.magic + weapon.obj.attack - target.resist
+                damage += self.magic + weapon.attack - target.resist
                 if damage <= 0:
                     damage = 1
                 if critical:
@@ -714,7 +714,7 @@ def generate(level, item):
 def place(level, point, item): #Use this to place an object next to a an object dependent on point.
     p = random.randrange(4)
     points = makepoints(level, point)
-    while '.' not in level[points[p].x][points[p].y] and '+' not in surroundings(points[p]):
+    while '.' not in level[points[p].x][points[p].y] and '+' not in surroundings(level, points[p]):
         p = random.randrange(4)
     final = points[p]
     level[final.x][final.y] = item
@@ -808,17 +808,25 @@ def make_level():
     npclist = checknpc(current)
     for i in range(len(npclist)):
         if npclist[i].job == "Shopkeeper":
-            print("Making shop...")
+#           print("Making shop...")
             npcpoint = generate(level,'п')
             npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
         elif npclist[i].job == "Healer":
             if npcpoint != None:
-                print("This will be next to shop.")
+#               print("This will be next to shop.")
                 npcpoint = place(level,npcpoint,'*')
             else:
-                print("There is no shop on this floor.")
+#               print("There is no shop on this floor.")
                 npcpoint = generate(level,'*')
-            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))            
+            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
+        elif npclist[i].job == "Blacksmith":
+            if npcpoint != None:
+#                print("This will be next to shop.")
+                npcpoint = place(level,npcpoint,'г')
+            else:
+#               print("There is no shop on this floor.")
+                npcpoint = generate(level,'г')
+            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))    
         else:
             npcpoint = generate(level,'!')
             npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
@@ -924,6 +932,7 @@ if __name__ == '__main__':
     init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
     init.append(item.itemwrapper(itemsys.make_item("Bronze Sword"), 1, char.position.x, char.position.y))
     init.append(item.itemwrapper(itemsys.make_item("Thunder"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Luna"), 1, char.position.x, char.position.y))
     for i in range(len(init)):
         bag.append(init[i])
     
@@ -1035,10 +1044,11 @@ if __name__ == '__main__':
             if level[newpos.x][newpos.y] == '>':
                 # Moving down a level
                 if current == len(levels) - 1:
+                    current += 1
                     levels.append(make_level())
                 #clear monsters
-                monsters = []
-                current += 1
+                monsters = []              
+                print("Entering level {}".format(current))
                 if current == 40:
                     sys.stdout.write("Looks like you reached the end of this labyrinth.")
                     read_key()

@@ -26,30 +26,43 @@ def printinv(char, level, pos, itemlocs, didyoumove):
     sys.stdout.write("\x1b[2J\x1b[H")    
     for i in range(len(bag)):
         obj = bag[i]
-        sys.stdout.write("{}: {} {}\n".format(i+1, obj.obj.name, obj.dur))
-    print("Select a number on screen to do stuff, or input and enter any other key to exit.")
+        sys.stdout.write("{}: {} {}\n".format(i, obj.name, obj.dur))
+    print("{}: Back\n".format(len(bag)))
+    print("Select a number on screen to do stuff.")
     k = read_key()
     dothis(char, k, level, pos, itemlocs, didyoumove)
  
 def dothis(hero, a, level, pos, itemlocs, moving):
-    try:
-       a = int(a)
-    except ValueError:
-       return
-    if a <= len(bag):
-         select = a - 1
-         interact(hero, select, level, pos, itemlocs, moving)
- 
+    o = False
+    while o == False:
+        try:
+            a = int(a)
+            if a >= 0 and a <= len(bag):
+                o = True 
+        except ValueError:
+            continue 
+    if a == len(bag):
+        return
+    elif a <= len(bag):
+        select = a
+        interact(hero, select, level, pos, itemlocs, moving)
+
+def unequip(hero, item):
+    hero.equip = None
+    print("Unequipped {}.".format(item.name))
+
 def equip(hero, item):
-    if hero.equip != None and hero.equip == item:
-        hero.equip = None
-        print("Unequipped the {}.".format(item.obj.name))
-    elif hero.equip == None and item.obj.subclass in hero.type.weapons:
+    if hero.equip == None and item.obj.school in hero.type.weapons:
         hero.equip = item
-        print("Equipped the {}.".format(item.obj.name))
+        print("Equipped {}.".format(item.name))
     else:
         print("You can't equip this!")
     time.sleep(1)
+
+def change(hero, takeout, takein):
+    if takeout != None and takein.obj.school in hero.type.weapons:
+        unequip(hero, takeout)
+    equip(hero, takein)
 
 def drop(hero, i, level, pos, itemlocs):
     if hero.equip != None and i.obj == hero.equip.obj:
@@ -88,7 +101,7 @@ def interact(hero, c, level, pos, itemlocs, moving):
         obj = bag[c]
         while a == '3':
             sys.stdout.write("\x1b[2J\x1b[H")
-            print("What would you like to do with {}? Input number.".format(obj.obj.name))
+            print("What would you like to do with {}? Input number.".format(obj.name))
             print(" 1.Un/equip\n 2.Use\n 3.Info\n 4.Drop \n 5.Sell\n 6.Back")
             a = read_key()
             if a == '1':
@@ -96,7 +109,7 @@ def interact(hero, c, level, pos, itemlocs, moving):
                     print("You can't equip that!")
                     time.sleep(2)
                 else:
-                    equip(hero, obj)
+                    change(hero, hero.equip,obj)
                 moving = False
                 return
             elif a == '2':
