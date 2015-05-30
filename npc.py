@@ -51,8 +51,8 @@ def checknpc(floor):
         for j in range(len(npcbase[i].floor)):
             if floor == npcbase[i].floor[j] or npcbase[i].floor[j] == 255:
                 npcs.append(npcbase[i])
-    for i in range(len(npcs)):
-        print("{} should be in this level.".format(npcs[i].name)) #debug
+#    for i in range(len(npcs)):
+#        print("{} should be in this level.".format(npcs[i].name)) #debug
     return npcs
 
 def healer(hero, npc):

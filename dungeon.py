@@ -30,11 +30,12 @@ from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 #control variables
 current = 0
 capacity = 5 #standard for weapons as well as skills
-HERO_MOVEABLE = ['.', '+', '#', '>','<','?']
+HERO_MOVEABLE = ['.', '+', '#', '>','<','?','|','-',None]
 NPC_ICONS = ['!','п','*','г']
-ENEMY_MOVEABLE = ['.', '+', '#', '>', '<']
+ENEMY_MOVEABLE = ['.', '+', '#', '>', '<','?']
 statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
 direction = None
+herodamage = 0
  
 # Dimensions of the dungeon
 X_DIM = 80
@@ -51,7 +52,7 @@ ROOM_WIDTH = (5, 20)
 MIN_SEP = 2
 
 # 10% an enemy will spawn for every move.
-MONSTER_PROB = 0.01
+MONSTER_PROB = 0.1
  
 Room = collections.namedtuple('Room', 'x y width height')
 Point = collections.namedtuple('Point', 'x y')
@@ -213,7 +214,7 @@ class hero:
         self.exp = 0
         self.culmlvl = 0
         self.promoted = 0
-        self.actuallvl = 0
+        self.actuallvl = 1
         self.displvl = 1
         self.bag = bag
         self.equip = None
@@ -584,7 +585,14 @@ def enemypos(dir):
         p = Point(char.position.x-2, char.position.y)
     elif dir == "S":
         p = Point(char.position.x, char.position.y+2)
-    return p 
+    else:
+        return None
+    return lookformonsters(p) 
+
+def lookformonsters(point):
+    for i in range(len(monsters)):
+        if point.x == monsters[i].pos.x and point.y == monsters[i].pos.y:
+            return monsters[i]
 
 def random_door(level, room):
     '''
@@ -930,9 +938,10 @@ if __name__ == '__main__':
     
     init = []
     init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Bronze Sword"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Thunder"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Luna"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Mercurius"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Goetia"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Master Seal"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Second Seal"), 1, char.position.x, char.position.y))
     for i in range(len(init)):
         bag.append(init[i])
     
@@ -964,11 +973,11 @@ if __name__ == '__main__':
         sys.stdout.write('\n')
         if char.equip != None:
             if char.equip.dur == 1:
-                sys.stdout.write('Equipped: {}, which has 1 use.'.format(char.equip.name))
+                sys.stdout.write('Equipped: {}, which has 1 use. Floor: {}'.format(char.equip.name,current+1))
             else:
-                sys.stdout.write('Equipped: {}, which has {} uses.'.format(char.equip.name, char.equip.dur))
+                sys.stdout.write('Equipped: {}, which has {} uses. Floor: {}'.format(char.equip.name, char.equip.dur,current+1))
         else:
-            sys.stdout.write('Equipped: Nothing!')
+            sys.stdout.write('Equipped: Nothing! Floor: {}'.format(current+1))
         sys.stdout.write('\n')
  
         if level[char.position.x][char.position.y] == '?':
@@ -1003,11 +1012,21 @@ if __name__ == '__main__':
         elif key == 'd':
             newpos = Point(char.position.x+1, char.position.y)
             direction = "E"
-#        elif key == 'e':
-#            if char.equip != None and char.equip.obj.range == 2:
-#                target = enemypos(direction)
-#                if target in MONSTERS:
-#                    char.attack(char.equip)
+        elif key == 'e':
+            if char.equip != None and char.equip.obj.range == 2:
+                target = enemypos(direction)
+                if target != None:
+                    herodamage = char.howtoattack(m)
+                    sys.stdout.write('{} has dealt {} damage to {}.\n'.format(char.name, herodamage, m.name))
+                    time.sleep(1)
+                    if char.equip != None and char.equip.dur <= 0:
+                        print("{} broke!".format(char.equip.obj.name))
+                        char.equip = None
+                    if char.equip != None and char.equip.dur > 0 and char.equip.obj.effect == "Brave" and m.HP > 0:
+                        herodamage = char.howtoattack(m)
+                        sys.stdout.write('ATTACK AGAIN! {} has dealt {} damage to {}.\n'.format(char.name, herodamage, m.name))
+                    if m.HP > 0:
+                        exppending = True
         elif key == 'h':
             direction = None
             help.display()
@@ -1022,8 +1041,7 @@ if __name__ == '__main__':
         else:
             continue
         if didyoumove == True:
-           
-            herodamage = 0
+
             exppending = False
             target = None
 
@@ -1042,12 +1060,14 @@ if __name__ == '__main__':
                         monsters.append(m)
      
             if level[newpos.x][newpos.y] == '>':
+                #clear monsters
+                for i in range(len(monsters) - 1, -1, -1):
+                    monsters[i].die(level)
+                    monsters.remove(monsters[i]) 
                 # Moving down a level
                 if current == len(levels) - 1:
-                    current += 1
                     levels.append(make_level())
-                #clear monsters
-                monsters = []              
+                current += 1                            
                 print("Entering level {}".format(current))
                 if current == 40:
                     sys.stdout.write("Looks like you reached the end of this labyrinth.")
@@ -1060,7 +1080,9 @@ if __name__ == '__main__':
                 # Moving up a level
                 if current > 0:
                     #clear monsters
-                    monsters = []
+                    for i in range(len(monsters) - 1, -1, -1):
+                        monsters[i].die(level)
+                        monsters.remove(monsters[i])
                     current -= 1
                     newpos = find_staircase(levels[current], '>')
 
@@ -1105,6 +1127,7 @@ if __name__ == '__main__':
                     monsters.remove(m)
                     sys.stdout.write('{} has killed a {}.\n'.format(char.name, m.name))
                     if char.displvl < 20:
+                        print('Dealt {} damage.'.format(herodamage))
                         char.expgain(char.calcexp(m,herodamage,True))
                     wait = True
                     continue
