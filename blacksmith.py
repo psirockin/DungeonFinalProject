@@ -54,18 +54,18 @@ def rename(hero):
         try:
             select = int(read_key())
 #           print('{} wields a {}.'.format(select, hero.bag[select].name))
-            if select >= 0 and select <= len(hero.bag):
-                if hero.bag[select].obj.type == "W" or hero.bag[select].obj.type == "M":
-                    reasonable = True
+            if select == len(hero.bag):
+                return
+            elif select >= 0 and select <= len(hero.bag):
+                if (hero.bag[select].obj.type == "W" or hero.bag[select].obj.type == "M") and hero.bag[select].obj.cost != 0:
+                    reasonable = True #Because you cannot edit legendary weapons
                 else:
-                    print("That's not a weapon.")
+                    print("You can't rename that.")
                     time.sleep(1)
         except ValueError:
             print("What?")
             time.sleep(1)
-            continue
-    if select == len(hero.bag):
-        return    
+            continue    
     print("Please enter its new name.")
     name = input()
     print("{}'s new name will be {}. [Y/N]".format(hero.bag[select].name, name))
@@ -96,18 +96,18 @@ def enchant(hero):
         try:
             select = int(read_key())
 #           print('{} wields a {}.'.format(select, hero.bag[select].name))
-            if select >= 0 and select <= len(hero.bag):
-                if hero.bag[select].obj.type == "W" or hero.bag[select].obj.type == "M":
+            if select == len(hero.bag):
+                return 
+            elif select >= 0 and select <= len(hero.bag):
+                if (hero.bag[select].obj.type == "W" or hero.bag[select].obj.type == "M") and hero.bag[select].obj.cost != 0:
                     reasonable = True
                 else:
-                    print("That's not a weapon.")
+                    print("You cannot enchant that.")
                     time.sleep(1)
         except ValueError:
             print("What?")
             time.sleep(1)
-            continue
-    if select == len(hero.bag):
-        return    
+            continue      
     print("How much points of attack would you like to raise? The maximum points is 5, and right now you have {} in attack.".format(hero.bag[select].forgestats[0]))
     atk = 255
     while not checksum(hero.bag[select].forgestats[0], atk):

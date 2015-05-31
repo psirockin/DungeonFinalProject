@@ -18,21 +18,21 @@ from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 ################################################################
 #                   TODO:
 # Implement a skill system.
-# Implement ranged attacks.
+# Implement ranged attacks. (COMPLETE)
 # Implement a convoy system with 5 extra spaces?
-# Somehow edit the attack system to accomodate Astra.
+# Somehow edit the attack system to accomodate Astra, or drop Astra altogether. Or, make a separate Astra attack method.
 # Add more NPCs. This includes a blacksmith and an alchemist.
-#
-#
+# Make shops more frequent and change the shop boolean into an array of ints.
+# Make a set direction key should be easy, but how should I do it?
+# Put in the rest of the weapons... Axes and bows, I think.
 ################################################################
 
  
 #control variables
 current = 0
 capacity = 5 #standard for weapons as well as skills
-HERO_MOVEABLE = ['.', '+', '#', '>','<','?','|','-',None]
+MOVEABLE = ['.', '+', '#', '>','<','?'] #For a "ghost", add the following to the array: '-','|',None
 NPC_ICONS = ['!','п','*','г']
-ENEMY_MOVEABLE = ['.', '+', '#', '>', '<','?']
 statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
 direction = None
 herodamage = 0
@@ -903,7 +903,7 @@ if __name__ == '__main__':
     print("Please enter your name.")
     n = input()
     if n == '':
-        n = "Joan Rivers"
+        n = "Mark"
     print("Please enter your asset.")
     print(statread)
     try:
@@ -1038,6 +1038,7 @@ if __name__ == '__main__':
                 didyoumove = False
                 printinv(char, level, char.position, items, didyoumove)
                 print_level(level)
+#       elif key == 'o':
         else:
             continue
         if didyoumove == True:
@@ -1114,7 +1115,7 @@ if __name__ == '__main__':
                             target = m             
                 newpos = char.position
 
-            elif level[newpos.x][newpos.y] not in HERO_MOVEABLE and level[newpos.x][newpos.y] not in NPC_ICONS:
+            elif level[newpos.x][newpos.y] not in MOVEABLE and level[newpos.x][newpos.y] not in NPC_ICONS:
                 # Hit a wall, should stay put
                 newpos = char.position
      
@@ -1145,7 +1146,7 @@ if __name__ == '__main__':
                                 d = char.howtoattack(m)
                                 sys.stdout.write('ATTACK AGAIN! {} took {} damage from {}.\n'.format(char.name,d, m.name))
                             wait = True
-                        elif level[p.x][p.y] in ENEMY_MOVEABLE and d1 < d0:
+                        elif level[p.x][p.y] in MOVEABLE and d1 < d0:
                             m.move(level, p)
                             break
 

@@ -55,14 +55,14 @@ def buy(hero,npc):
         while reasonable == False:
             try:
                 select = int(read_key())
+                if select == len(canbuy):
+                    return
                 if select >= 0 and select <= len(canbuy):
                     reasonable = True
             except ValueError:
                 print("What?")
                 time.sleep(1)
                 continue
-        if select == len(canbuy):
-            return
         cost = str(canbuy[select].cost)
         print('{} [Y/N]'.format(buildquote(shopquotes[npc.i.level][1], [canbuy[select].name, cost])))
         choose = 'Bleh'
@@ -101,14 +101,14 @@ def sell(hero,npc):
         while reasonable == False:
             try:
                 select = int(read_key())
+                if select == len(hero.bag):
+                    return
                 if select >= 0 and select <= len(hero.bag):
                     reasonable = True
             except ValueError:
                 print("What?")
                 time.sleep(1)
                 continue
-        if select == len(hero.bag):
-            return
         sell = int ((hero.bag[select].dur / hero.bag[select].obj.dur) * hero.bag[select].obj.cost * .5)
         printsum = str(sell) + "G"
         print('{} [Y/N]'.format(buildquote(shopquotes[npc.i.level][3], [printsum])))
