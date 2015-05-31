@@ -37,13 +37,12 @@ def dothis(hero, a, level, pos, itemlocs, moving):
     while o == False:
         try:
             a = int(a)
-            if a == len(bag):
-                return
-            elif a >= 0 and a <= len(bag):
+            if a >= 0 and a <= len(bag):
                 o = True 
         except ValueError:
             continue 
-    
+    if a == len(bag):
+        return
     elif a <= len(bag):
         select = a
         interact(hero, select, level, pos, itemlocs, moving)
