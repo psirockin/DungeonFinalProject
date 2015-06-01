@@ -19,7 +19,7 @@ def read_key():
         termios.tcsetattr(fd, termios.TCSADRAIN, tty_settings)
     return key
 
-def shop(hero, npc):       
+def shop(hero, npc, level):       
     i = 0
     while i != '3':
         sys.stdout.write("\x1b[2J\x1b[H")
@@ -28,7 +28,7 @@ def shop(hero, npc):
         print(shopquotes[npc.i.level][0])
         i = read_key()
         if i == '1':
-            buy(hero,npc)
+            buy(hero,npc,level)
         elif i == '2':
             sell(hero,npc)
         elif i == '3':
@@ -36,15 +36,16 @@ def shop(hero, npc):
             time.sleep(1)
             break
 
-def buy(hero,npc):    
+def buy(hero,npc,level):    
     if len(hero.bag) >= 5:
             print("Bag is too full.")
             time.sleep(1)
             return
     canbuy = [] 
-    for i in range(len(catalog[npc.i.level])):
-            if catalog[npc.i.level][i].shop:
-                canbuy.append(catalog[npc.i.level][i])
+    for i in range(len(catalog)):
+        for j in range(len(catalog[i])):
+            if level in catalog[i][j].shop:
+                canbuy.append(catalog[i][j])
     while len(hero.bag) < 5:
         sys.stdout.write("\x1b[2J\x1b[H")                  
         print("Pick an item from 0-{}.".format(len(canbuy) - 1))
@@ -140,6 +141,7 @@ def buildquote(quote, words):
         else:
             final += quote[i]
     return final
+
 shopquotes = [
 ["なにを差し上げる?","*の値段は...*Gぐらいだよ。買う？","なにを売る？","これ、*を上げられる。","じゃあ、どうぞ！*だよ！","残念。Gが足りないよ。","じゃあ、またどうぞ！"],
 ["What can I help ya with?","*'ll be worth *G. Gonna buy?","What ya sellin'?","I'll give ya *G.","Here ya go! *!","Sorry, ya don't have 'nuff money.","Come again, y'hear?"],

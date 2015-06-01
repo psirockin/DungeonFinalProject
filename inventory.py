@@ -43,10 +43,8 @@ def dothis(hero, a, level, pos, itemlocs, moving):
                 o = True 
         except ValueError:
             continue 
-    
-    elif a <= len(bag):
-        select = a
-        interact(hero, select, level, pos, itemlocs, moving)
+    select = a
+    interact(hero, select, level, pos, itemlocs, moving)
 
 def unequip(hero, item):
     hero.equip = None

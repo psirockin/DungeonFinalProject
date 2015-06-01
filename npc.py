@@ -32,11 +32,11 @@ class npcwrapper:
         self.y = y
 
 npcbase = [
-npc("誠","Shopkeeper","あ、いらっしゃい！ここは初心者のショップだよ！",[0],0),
-npc("Jin","Shopkeeper","'Sup! Welcome to my shop! Y'can find decent goods here.",[6],1),
-npc("Aku","Shopkeeper","Oh, welcome. I have some slightly better goods.",[13],2),
+npc("誠","Shopkeeper","あ、いらっしゃい！ここで買ったり売ったりしてできますよ！",[0,3,6,9,12,15,18,21,24,27,30],0),
+npc("Jin","Shopkeeper","'Sup! Welcome to my shop!",[1,4,7,10,13,16,19,22,25,28,31],1),
+npc("Aku","Shopkeeper","Oh, welcome. What are you looking for?",[2,5,8,11,14,17,20,23,26,29],2),
 npc("Jadine","Healer","If you are injured, 300G will heal you right up.",[0,4,8,12,16,20,24,28,32,36],0),
-#npc("Christopher","Alchemist","Gather items to make better items.",[255],0),
+#npc("Tora","Alchemist","Gather items to make better items.",[255],0),
 npc("Wolf","Blacksmith","Welcome! I'll enchant your weapons for a fair price!",[255],0)
 ]
 
@@ -87,7 +87,7 @@ def healer(hero, npc):
 
 def dothings(hero, npc, level):
     if npc.i.job == "Shopkeeper":
-        shopping.shop(hero, npc)
+        shopping.shop(hero, npc, level)
     elif npc.i.job == "Healer":
         healer(hero, npc)
     elif npc.i.job == "Blacksmith" and len(hero.bag) != 0:

@@ -938,10 +938,8 @@ if __name__ == '__main__':
     
     init = []
     init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Mercurius"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Goetia"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Master Seal"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Second Seal"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Silver Sword"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Thoron"), 1, char.position.x, char.position.y))
     for i in range(len(init)):
         bag.append(init[i])
     
@@ -1038,7 +1036,26 @@ if __name__ == '__main__':
                 didyoumove = False
                 printinv(char, level, char.position, items, didyoumove)
                 print_level(level)
-#       elif key == 'o':
+        elif key == 'o':
+            sys.stdout.write("Please set the direction that you are facing(WASD).")
+            sys.stdout.flush()
+            k = read_key()
+            if k == 'a':
+                direction = "W"
+                sys.stdout.write("Facing west.")
+            elif k == 's':
+                direction = "S"
+                sys.stdout.write("Facing south.")
+            elif k == 'd':
+                direction = "E"
+                sys.stdout.write("Facing east.")
+            elif k == 'w':
+                direction = "N"
+                sys.stdout.write("Facing north.")
+            else:
+                continue
+            sys.stdout.flush()
+            didyoumove = False
         else:
             continue
         if didyoumove == True:
