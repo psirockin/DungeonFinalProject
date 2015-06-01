@@ -21,17 +21,18 @@ from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 # Implement ranged attacks. (COMPLETE)
 # Implement a convoy system with 5 extra spaces?
 # Somehow edit the attack system to accomodate Astra, or drop Astra altogether. Or, make a separate Astra attack method.
-# Add more NPCs. This includes a blacksmith and an alchemist.
-# Make shops more frequent and change the shop boolean into an array of ints.
-# Make a set direction key should be easy, but how should I do it?
-# Put in the rest of the weapons... Axes and bows, I think.
+# Add more NPCs. This includes a blacksmith and an alchemist. (BLACKSMITH COMPLETE)
+# Make shops more frequent and change the shop boolean into an array of ints. (COMPLETE)
+# Make a set direction key should be easy, but how should I do it? (COMPLETE)
+# Put in the rest of the weapons... Axes and bows, I think. (COMPLETE)
+# Put in locations of merchant items(aka more simple but mundane work).
 ################################################################
 
  
 #control variables
 current = 0
 capacity = 5 #standard for weapons as well as skills
-MOVEABLE = ['.', '+', '#', '>','<','?'] #For a "ghost", add the following to the array: '-','|',None
+MOVEABLE = ['.', '+', '#', '>','<','?','0'] #For a "ghost", add the following to the array: '-','|',None
 NPC_ICONS = ['!','п','*','г']
 statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
 direction = None
@@ -205,12 +206,14 @@ class hero:
     def __init__(self, name, a, f):
         self.money = 1000
         self.type = setclass("Tactician")
+        self.weapons = setclass("Tactician").weapons
         self.stats = [19,6,5,5,6,4,6,4]
         self.base = [40,40,35,35,35,55,30,20] #This is personal to the player. I will use this a lot for changing class.
         self.default = [0,0,0,0,0,0,0,0] #HP, Str, Mag, Skl, Spd, Lck, Def, Res
         self.modify = [0,0,0,0,0,0,0,0] #This will be static once assets and flaws are determined
         self.max = self.type.maximum
         self.name = name
+        self.coins = 0
         self.exp = 0
         self.culmlvl = 0
         self.promoted = 0
@@ -415,6 +418,12 @@ class hero:
             self.stats[f] -= 2
         else:
             self.stats[f] -= 1
+        self.setstats()
+
+    def boost(self,index,amount):
+        self.stats[index] += amount
+        print('{} increased by {}.'.format(statread[index],amount))
+        time.sleep(1)
         self.setstats()
 
     def setstats(self):
@@ -788,6 +797,8 @@ def make_level():
             level = new_level
             rooms.append(room)
             for i in range(1):
+                if random.randrange(100) < 30:
+                    add_to_floor(level, room, '0')
                 post = add_to_floor(level, room, '?')
                 make_item(level, post)
             break
@@ -940,6 +951,7 @@ if __name__ == '__main__':
     init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
     init.append(item.itemwrapper(itemsys.make_item("Silver Sword"), 1, char.position.x, char.position.y))
     init.append(item.itemwrapper(itemsys.make_item("Thoron"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Seraph Robe"), 1, char.position.x, char.position.y))
     for i in range(len(init)):
         bag.append(init[i])
     
@@ -971,9 +983,9 @@ if __name__ == '__main__':
         sys.stdout.write('\n')
         if char.equip != None:
             if char.equip.dur == 1:
-                sys.stdout.write('Equipped: {}, which has 1 use. Floor: {}'.format(char.equip.name,current+1))
+                sys.stdout.write('Equipped: {}, which has 1 use. Floor: {} Coins: {}'.format(char.equip.name,current+1,char.coins))
             else:
-                sys.stdout.write('Equipped: {}, which has {} uses. Floor: {}'.format(char.equip.name, char.equip.dur,current+1))
+                sys.stdout.write('Equipped: {}, which has {} uses. Floor: {} Coins: {}'.format(char.equip.name, char.equip.dur,current+1,char.coins))
         else:
             sys.stdout.write('Equipped: Nothing! Floor: {}'.format(current+1))
         sys.stdout.write('\n')
@@ -1094,6 +1106,7 @@ if __name__ == '__main__':
                     read_key()
                     break
                 newpos = find_staircase(levels[current], '<')
+
             elif level[newpos.x][newpos.y] == '<':
                 # Moving up a level
                 if current > 0:
@@ -1106,6 +1119,13 @@ if __name__ == '__main__':
 
             elif level[newpos.x][newpos.y] == '?':
                 newitem = True
+
+            elif level[newpos.x][newpos.y] == '0':
+                char.coins += 1
+                sys.stdout.write("Obtained 1 coin. These will reveal more items in shops.")
+                sys.stdout.flush()
+                time.sleep(1)
+                level[newpos.x][newpos.y] = '.'
 
             elif level[newpos.x][newpos.y] in NPC_ICONS:
                 for i in range(len(npcs)):

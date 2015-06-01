@@ -21,6 +21,19 @@ def read_key():
 
 def shop(hero, npc, level):       
     i = 0
+    hidden = False
+    if hero.coins > 0:
+        print('{} [Y/N]'.format(shopquotes[7]))
+        choose = 'Bleh'
+        while choose != 'y' and choose != 'n':
+            choose = read_key()
+            choose.lower()
+            if choose != 'y' and choose != 'n':
+                print("Well?")
+                time.sleep(1)
+            elif choose == 'y':
+                hero.coins -= 1
+                hidden = True
     while i != '3':
         sys.stdout.write("\x1b[2J\x1b[H")
         print("{}: {}\n".format(npc.i.name,npc.i.welcome)) 
@@ -143,6 +156,6 @@ def buildquote(quote, words):
     return final
 
 shopquotes = [
-["なにを差し上げる?","*の値段は...*Gぐらいだよ。買う？","なにを売る？","これ、*を上げられる。","じゃあ、どうぞ！*だよ！","残念。Gが足りないよ。","じゃあ、またどうぞ！"],
-["What can I help ya with?","*'ll be worth *G. Gonna buy?","What ya sellin'?","I'll give ya *G.","Here ya go! *!","Sorry, ya don't have 'nuff money.","Come again, y'hear?"],
-["Need a... hand? -holds out hand-","Aye, this is worth *G. How about it?","Item for gold? That's gold.","This is worth *G.","Here, *!","Huh? What's that? You need more money.","Come again!"]]
+["なにを差し上げる?","*の値段は...*Gぐらいだよ。買う？","なにを売る？","これ、*を上げられる。","じゃあ、どうぞ！*だよ！","残念。Gが足りないよ。","じゃあ、またどうぞ！","円玉が持ってきたかな？払うかな？"],
+["What can I help ya with?","*'ll be worth *G. Gonna buy?","What ya sellin'?","I'll give ya *G.","Here ya go! *!","Sorry, ya don't have 'nuff money.","Come again, y'hear?","You gonna use that coin?"],
+["Need a... hand? -holds out hand-","Aye, this is worth *G. How about it?","Item for gold? That's gold.","This is worth *G.","Here, *!","Huh? What's that? You need more money.","Come again!","I see that you got a coin. You using it?"]]

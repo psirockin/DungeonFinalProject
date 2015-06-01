@@ -33,7 +33,7 @@ class npcwrapper:
 
 npcbase = [
 npc("誠","Shopkeeper","あ、いらっしゃい！ここで買ったり売ったりしてできますよ！",[0,3,6,9,12,15,18,21,24,27,30],0),
-npc("Jin","Shopkeeper","'Sup! Welcome to my shop!",[1,4,7,10,13,16,19,22,25,28,31],1),
+npc("Bryan","Shopkeeper","'Sup! Welcome to my shop!",[1,4,7,10,13,16,19,22,25,28,31],1),
 npc("Aku","Shopkeeper","Oh, welcome. What are you looking for?",[2,5,8,11,14,17,20,23,26,29],2),
 npc("Jadine","Healer","If you are injured, 300G will heal you right up.",[0,4,8,12,16,20,24,28,32,36],0),
 #npc("Tora","Alchemist","Gather items to make better items.",[255],0),
@@ -56,8 +56,8 @@ def checknpc(floor):
     return npcs
 
 def healer(hero, npc):
-    sys.stdout.write("\x1b[2J\x1b[H")
-    print("{}: {} [Y/N]".format(npc.i.name,npc.i.welcome))
+    sys.stdout.write("{}: {} [Y/N]".format(npc.i.name,npc.i.welcome))
+    sys.stdout.flush()
     choose = 'Bleh'
     while choose != 'y' and choose != 'n':
         choose = read_key()

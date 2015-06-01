@@ -129,6 +129,10 @@ def interact(hero, c, level, pos, itemlocs, moving):
                     hero.heal(obj.obj.effect)
                     moving = True
                     used = True
+                elif obj.obj.type == "B": #I used the req parameter here because I don't wanna add another parameter.
+                    hero.boost(obj.obj.req,obj.obj.effect)
+                    moving = True
+                    used = True
                 else:
                     moving = False
                 if used:
