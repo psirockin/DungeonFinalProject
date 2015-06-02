@@ -1,9 +1,10 @@
 import sys
 import time
+import inventory
+import random
 from item import catalog, itemwrapper
 import tty
 import termios
-import inventory
 
 def read_key():
     '''
@@ -21,9 +22,9 @@ def read_key():
 
 def shop(hero, npc, level):       
     i = 0
-    hidden = False
+    addlist = []
     if hero.coins > 0:
-        print('{} [Y/N]'.format(shopquotes[7]))
+        print('{} [Y/N]'.format(shopquotes[npc.i.level][7]))
         choose = 'Bleh'
         while choose != 'y' and choose != 'n':
             choose = read_key()
@@ -33,7 +34,7 @@ def shop(hero, npc, level):
                 time.sleep(1)
             elif choose == 'y':
                 hero.coins -= 1
-                hidden = True
+                addlist = revealhidden(level)
     while i != '3':
         sys.stdout.write("\x1b[2J\x1b[H")
         print("{}: {}\n".format(npc.i.name,npc.i.welcome)) 
@@ -41,15 +42,26 @@ def shop(hero, npc, level):
         print(shopquotes[npc.i.level][0])
         i = read_key()
         if i == '1':
-            buy(hero,npc,level)
+            buy(hero,npc,level,addlist)
         elif i == '2':
             sell(hero,npc)
         elif i == '3':
-            print(shopquotes[npc.i.level][len(shopquotes[npc.i.level]) - 1])
+            print(shopquotes[npc.i.level][6])
             time.sleep(1)
             break
 
-def buy(hero,npc,level):    
+def revealhidden(level):
+    firstlist = []
+    secondlist = []
+    for i in range(len(catalog)):
+        for j in range(len(catalog[i])):
+            if level in catalog[i][j].hidden or 255 in catalog[i][j].hidden:
+                firstlist.append(catalog[i][j]) #Loads the list of potential merchant items
+    for k in range(3): #Determining items for final list
+        secondlist.append(firstlist.pop(random.randrange(len(firstlist))))
+    return secondlist
+
+def buy(hero,npc,level,addlist):    
     if len(hero.bag) >= 5:
             print("Bag is too full.")
             time.sleep(1)
@@ -59,6 +71,9 @@ def buy(hero,npc,level):
         for j in range(len(catalog[i])):
             if level in catalog[i][j].shop:
                 canbuy.append(catalog[i][j])
+    if len(addlist) != 0:
+        for i in range(len(addlist)):
+            canbuy.append(addlist[i])
     while len(hero.bag) < 5:
         sys.stdout.write("\x1b[2J\x1b[H")                  
         print("Pick an item from 0-{}.".format(len(canbuy) - 1))
@@ -156,6 +171,6 @@ def buildquote(quote, words):
     return final
 
 shopquotes = [
-["なにを差し上げる?","*の値段は...*Gぐらいだよ。買う？","なにを売る？","これ、*を上げられる。","じゃあ、どうぞ！*だよ！","残念。Gが足りないよ。","じゃあ、またどうぞ！","円玉が持ってきたかな？払うかな？"],
+["なにを差し上げる?","*の値段は...*Gぐらいだよ。買う？","なにを売る？","これ、*を上げられる。","じゃあ、どうぞ！*だよ！","残念。Gが足りないよ。","じゃあ、またどうぞ！","円玉が持ってきたかな？払う？"],
 ["What can I help ya with?","*'ll be worth *G. Gonna buy?","What ya sellin'?","I'll give ya *G.","Here ya go! *!","Sorry, ya don't have 'nuff money.","Come again, y'hear?","You gonna use that coin?"],
 ["Need a... hand? -holds out hand-","Aye, this is worth *G. How about it?","Item for gold? That's gold.","This is worth *G.","Here, *!","Huh? What's that? You need more money.","Come again!","I see that you got a coin. You using it?"]]

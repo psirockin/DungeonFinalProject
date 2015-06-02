@@ -53,7 +53,7 @@ ROOM_WIDTH = (5, 20)
 MIN_SEP = 2
 
 # 10% an enemy will spawn for every move.
-MONSTER_PROB = 0.1
+MONSTER_PROB = 0.01
  
 Room = collections.namedtuple('Room', 'x y width height')
 Point = collections.namedtuple('Point', 'x y')
@@ -213,7 +213,7 @@ class hero:
         self.modify = [0,0,0,0,0,0,0,0] #This will be static once assets and flaws are determined
         self.max = self.type.maximum
         self.name = name
-        self.coins = 0
+        self.coins = 1
         self.exp = 0
         self.culmlvl = 0
         self.promoted = 0
@@ -987,7 +987,7 @@ if __name__ == '__main__':
             else:
                 sys.stdout.write('Equipped: {}, which has {} uses. Floor: {} Coins: {}'.format(char.equip.name, char.equip.dur,current+1,char.coins))
         else:
-            sys.stdout.write('Equipped: Nothing! Floor: {}'.format(current+1))
+            sys.stdout.write('Equipped: Nothing! Floor: {} Coins: {}'.format(current+1,char.coins))
         sys.stdout.write('\n')
  
         if level[char.position.x][char.position.y] == '?':
@@ -1130,7 +1130,7 @@ if __name__ == '__main__':
             elif level[newpos.x][newpos.y] in NPC_ICONS:
                 for i in range(len(npcs)):
                     if level[newpos.x][newpos.y] == level[npcs[i].x][npcs[i].y] and direction != None:
-                        print("You are standing on a {}".format(npcs[i].i.job))
+#                       print("You are standing on a {}".format(npcs[i].i.job))
                         dothings(char, npcs[i], current)
                 
 
