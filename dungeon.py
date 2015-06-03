@@ -2,7 +2,7 @@
  
 import itemsys
 import help
-from inventory import bag, printinv, update
+from inventory import convoy, printinv, update
 import collections
 import copy
 import random
@@ -12,26 +12,26 @@ import tty
 import time
 import item
 import math
+import skills
 from units import data, setclass, ispromote, getbase, getmax, paramcheck
 from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 
 ################################################################
 #                   TODO:
-# Implement a skill system.
+# Implement a skill system. (STILL NEED TO WORK ON THE INTERNAL "STAT-CHANGE SKILLS")
 # Implement ranged attacks. (COMPLETE)
 # Implement a convoy system with 5 extra spaces?
-# Somehow edit the attack system to accomodate Astra, or drop Astra altogether. Or, make a separate Astra attack method.
+# Somehow edit the attack system to accomodate Astra, or drop Astra altogether. Or, make a separate Astra attack method. (DONE)
 # Add more NPCs. This includes a blacksmith and an alchemist. (BLACKSMITH COMPLETE)
 # Make shops more frequent and change the shop boolean into an array of ints. (COMPLETE)
 # Make a set direction key should be easy, but how should I do it? (COMPLETE)
 # Put in the rest of the weapons... Axes and bows, I think. (COMPLETE)
-# Put in locations of merchant items(aka more simple but mundane work).
+# Put in locations of merchant items(aka more simple but mundane work). (DONE)
 ################################################################
 
  
 #control variables
 current = 0
-capacity = 5 #standard for weapons as well as skills
 MOVEABLE = ['.', '+', '#', '>','<','?','0'] #For a "ghost", add the following to the array: '-','|',None
 NPC_ICONS = ['!','п','*','г']
 statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
@@ -53,7 +53,7 @@ ROOM_WIDTH = (5, 20)
 MIN_SEP = 2
 
 # 10% an enemy will spawn for every move.
-MONSTER_PROB = 0.01
+MONSTER_PROB = 0.1
  
 Room = collections.namedtuple('Room', 'x y width height')
 Point = collections.namedtuple('Point', 'x y')
@@ -207,21 +207,24 @@ class hero:
         self.money = 1000
         self.type = setclass("Tactician")
         self.weapons = setclass("Tactician").weapons
-        self.stats = [19,6,5,5,6,4,6,4]
+        self.stats = [19,6,5,70,6,4,6,4]
         self.base = [40,40,35,35,35,55,30,20] #This is personal to the player. I will use this a lot for changing class.
         self.default = [0,0,0,0,0,0,0,0] #HP, Str, Mag, Skl, Spd, Lck, Def, Res
         self.modify = [0,0,0,0,0,0,0,0] #This will be static once assets and flaws are determined
         self.max = self.type.maximum
         self.name = name
+        self.capacity = 5
+        self.convoymax = 10
         self.coins = 1
         self.exp = 0
         self.culmlvl = 0
         self.promoted = 0
         self.actuallvl = 1
         self.displvl = 1
-        self.bag = bag
+        self.bag = []
+        self.convoy = []
         self.equip = None
-        self.skillset = []
+        self.skillset = ["Astra"]
         self.inactiveskills = []
  
     def expgain(self,exp):
@@ -489,11 +492,36 @@ class hero:
         time.sleep(2)
         return
 
+    def battleskillcheck(self, target, damage):
+        active = random.randrange(100)
+        for i in range(len(self.skillset)):
+            skill = self.skillset[i]
+            if skill == "Lethality" and skill <= int(active / 4): #Arranging order by priority, must be hard-coded
+                return skills.Lethality(self, target)
+            elif skill == "Aether" and skill <= int(active / 2):
+                return skills.Aether(self, target, damage)
+            elif skill == "Astra" and skill <= int(active / 2):
+                return skills.Astra(self, target, damage)
+            elif skill == "Sol" and skill <= int(active):
+                return skills.Sol(self, target, damage)
+            elif skill == "Luna" and skill <= int(active):
+                return skills.Luna(self, target, damage)
+            elif skill == "Ignis" and skill <= int(active):
+                return skills.Ignis(self, target, damage)
+            elif skill == "Vengeance" and skill <= int(active * 2):
+                return skills.Vengeance(self, target, damage)
+        return self.attacking(target, damage)
+
     def howtoattack(self,target):
         if self.equip == None:
             return self.struggle(target)
         else:
-            return self.attacking(self.equip, target, 0)
+            dmg = self.equip.attack
+            if self.equip.obj.type == "W":
+                dmg += self.strength
+            else:
+                dmg += self.magic
+            return self.battleskillcheck(target, dmg)
 
     def struggle(self,target):
         damage = 0
@@ -511,40 +539,25 @@ class hero:
         target.HP -= damage
         return damage
 
-    def attacking(self, weapon, target, damage):
+    def attacking(self, target, damage):
         miss = False
-        critical = (random.randrange(100) <= weapon.critical + self.skill / 2)
-        accuracy = weapon.accuracy + (self.skill * 3 + self.luck) / 2
-        ############ These are all skill checks
-            
-
-        ############
+        critical = (random.randrange(100) <= self.equip.critical + self.skill / 2)
+        accuracy = self.equip.accuracy + (self.skill * 3 + self.luck) / 2
         if accuracy < random.randrange(100):
             sys.stdout.write("Missed! ")
             miss = True
         if miss == False:
-            if weapon.obj.type == "W":
-                damage += self.strength + weapon.attack - target.defense
-                if damage <= 0:
-                    damage = 1
-                if critical:
-                    sys.stdout.write("CRITICAL! " )
-                    damage *= 3
-                target.HP -= damage
-                if weapon.obj.effect == "Drain": 
-                    self.heal(int(damage * .5))                    
-            elif weapon.obj.type == "M":
-                damage += self.magic + weapon.attack - target.resist
-                if damage <= 0:
-                    damage = 1
-                if critical:
-                    sys.stdout.write("CRITICAL! " )
-                    damage *= 3
-                target.HP -= damage
-                if weapon.obj.effect == "Drain":
-                    self.heal(int(damage * .5))
-        weapon.dur -= 1
-        return damage
+            if damage <= 0:
+                return 0
+            if critical:
+                sys.stdout.write("CRITICAL! " )
+                damage *= 3
+            target.HP -= damage
+            self.equip.dur -= 1
+            if self.equip.obj.effect == "Drain": 
+                self.heal(int(damage * .5))  
+            return damage
+        return 0
 
     def heal(self,amount):
         self.HP += amount
@@ -950,10 +963,9 @@ if __name__ == '__main__':
     init = []
     init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
     init.append(item.itemwrapper(itemsys.make_item("Silver Sword"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Thoron"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Seraph Robe"), 1, char.position.x, char.position.y))
+    init.append(item.itemwrapper(itemsys.make_item("Celica's Gale"), 1, char.position.x, char.position.y))
     for i in range(len(init)):
-        bag.append(init[i])
+        char.bag.append(init[i])
     
 ###################################################################################
 
@@ -995,13 +1007,13 @@ if __name__ == '__main__':
 #                print("One item at {}, {} and I'm at {}, {}.".format(items[a].x,items[a].y,char.position.x,char.position.y))
                 if items[a].x == char.position.x and items[a].y == char.position.y:
                     it = items[a]
-            if len(bag) < capacity:
+            if len(char.bag) < capacity:
                 bag.append(it)
                 level[char.position.x][char.position.y] = '.'
                 print("{} obtained.".format(it.obj.name))
                 items.remove(it)
             else:
-                print("Bag full")
+                print("Bag full.")
  
         key = read_key()
 
@@ -1041,12 +1053,12 @@ if __name__ == '__main__':
             direction = None
             help.display()
         elif key == 'i':
-            if len(bag) == 0:
+            if len(char.bag) == 0:
                 continue
             else:
                 direction = None
                 didyoumove = False
-                printinv(char, level, char.position, items, didyoumove)
+                printinv(char, level, char.position, items, didyoumove, char.bag, "BAG")
                 print_level(level)
         elif key == 'o':
             sys.stdout.write("Please set the direction that you are facing(WASD).")
@@ -1068,6 +1080,14 @@ if __name__ == '__main__':
                 continue
             sys.stdout.flush()
             didyoumove = False
+        elif key == 'c':
+            if len(char.convoy) == 0 and len(char.bag) == 0:
+                continue
+            else:
+                direction = None
+                didyoumove = False
+                convoy(char, level, char.position, items, didyoumove)
+                print_level(level)
         else:
             continue
         if didyoumove == True:

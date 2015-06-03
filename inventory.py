@@ -20,29 +20,43 @@ def read_key():
     return key
 
 # Mitsunari-san's inventory
-bag = []
- 
-def printinv(char, level, pos, itemlocs, didyoumove):
-    sys.stdout.write("\x1b[2J\x1b[H")    
-    for i in range(len(bag)):
-        obj = bag[i]
+
+def take_out(hero, k, level, pos, itemlocs, moving):
+    hero.bag.append(hero.convoy.pop(k))
+    printinv(hero, level, pos, itemlocs, moving, hero.convoy, "TAKE OUT")
+
+def put_in(hero, k, level, pos, itemlocs, moving):
+    hero.convoy.append(hero.bag.pop(k)) #Try to make a while loop in order to not take things out one at a time
+    printinv(hero, level, pos, itemlocs, moving, hero.bag, "PUT IN")
+
+def printinv(hero, level, pos, itemlocs, didyoumove, inv, command):
+    sys.stdout.write("\x1b[2J\x1b[H")
+    print("Select a number on screen to do stuff.")   
+    for i in range(len(inv)):
+        obj = inv[i]
         sys.stdout.write("{}: {} {}\n".format(i, obj.name, obj.dur))
-    print("{}: Back\n".format(len(bag)))
-    print("Select a number on screen to do stuff.")
-    k = read_key()
-    dothis(char, k, level, pos, itemlocs, didyoumove)
- 
-def dothis(hero, a, level, pos, itemlocs, moving):
+    print("{}: Back\n".format(len(inv)))
+    k = int(read_key())
+    if k == len(inv):
+        return
+    elif command == "BAG":
+        dothis(hero, k, level, pos, itemlocs, didyoumove, inv)
+    elif command == "TAKE OUT":
+        take_out(hero, k, level, pos, itemlocs, didyoumove)
+    elif command == "PUT IN":
+        put_in(hero, k, level, pos, itemlocs, didyoumove)
+
+def dothis(hero, a, level, pos, itemlocs, moving, inv):
     o = False
     while o == False:
         try:
             a = int(a)
-            if a == len(bag):
+            if a == len(inv):
                 return
-            elif a >= 0 and a <= len(bag):
+            elif a >= 0 and a <= len(inv):
                 o = True 
         except ValueError:
-            continue 
+                continue
     select = a
     interact(hero, select, level, pos, itemlocs, moving)
 
@@ -77,27 +91,53 @@ def drop(hero, i, level, pos, itemlocs):
                 i.y = pos.y + index[b]
 #               print("This is at {}, {}.".format(i.x,i.y))
                 itemlocs.append(i)
-                bag.remove(i)
+                hero.bag.remove(i)
                 return
     print("No dropping locations available.")
 
 def sell(hero, i):
     if hero.equip != None and i.obj == hero.equip.obj:
         equip(hero, i)
-    for a in range(len(bag) - 1, -1, -1):
-        if i.obj == bag[a].obj:
+    for a in range(len(hero.bag) - 1, -1, -1):
+        if i.obj == hero.bag[a].obj:
             hero.money += int(i.obj.cost * .25)
-            bag.pop(a)
+            hero.bag.pop(a)
             return
 
-def update():
-    for a in range(len(bag) - 1, -1, -1):
-        if bag[a].dur <= 0:
-            bag.pop(a)
+def update(hero):
+    for a in range(len(hero.bag) - 1, -1, -1):
+        if hero.bag[a].dur <= 0:
+            hero.bag.pop(a)
+
+def convoy(hero, level, pos, items, moving):
+        a = '0'
+        while a != '3':
+            sys.stdout.write("\x1b[2J\x1b[H")
+            print("What would you like to do?")
+            print(" 1.Take out\n 2.Put in\n 3.Back")
+            a = read_key()
+            if a == '1':
+                if len(hero.bag) >= hero.capacity:
+                    print("Bag full.")
+                    time.sleep(1)
+                elif len(hero.convoy) == 0:
+                    print("Convoy empty.")
+                    time.sleep(1)
+                else:
+                    printinv(hero, level, hero.position, items, moving, hero.convoy, "TAKE OUT")
+            elif a == '2':
+                if len(hero.convoy) >= hero.convoymax:
+                    print("Convoy full.")
+                elif len(hero.bag) == 0:
+                    print("Bag empty.")
+                else:
+                    printinv(hero, level, hero.position, items, moving, hero.bag, "PUT IN")    
+            elif a == '3':
+                return
  
 def interact(hero, c, level, pos, itemlocs, moving):
         a = '3'
-        obj = bag[c]
+        obj = hero.bag[c]
         while a == '3':
             sys.stdout.write("\x1b[2J\x1b[H")
             print("What would you like to do with {}? Input number.".format(obj.name))
@@ -147,5 +187,5 @@ def interact(hero, c, level, pos, itemlocs, moving):
             elif a == '5':
                 sell(hero, obj)
             elif a == '6':
-                printinv(hero, level, pos, itemlocs, moving)
+                printinv(hero, level, pos, itemlocs, moving, hero.bag, "BAG")
 
