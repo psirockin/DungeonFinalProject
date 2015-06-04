@@ -53,7 +53,7 @@ def dothis(hero, a, level, pos, itemlocs, moving, inv):
             a = int(a)
             if a == len(inv):
                 return
-            elif a >= 0 and a <= len(inv):
+            elif a >= 0 and a < len(inv):
                 o = True 
         except ValueError:
                 continue

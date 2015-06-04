@@ -1,6 +1,7 @@
 import collections
 import shopping
 import blacksmith
+import alchemist
 import tty
 import time
 import sys
@@ -36,7 +37,7 @@ npc("誠","Shopkeeper","あ、いらっしゃい！ここで買ったり売っ�
 npc("Bryan","Shopkeeper","'Sup! Welcome to my shop!",[1,4,7,10,13,16,19,22,25,28,31],1),
 npc("Aku","Shopkeeper","Oh, welcome. What are you looking for?",[2,5,8,11,14,17,20,23,26,29],2),
 npc("Jadine","Healer","If you are injured, 300G will heal you right up.",[0,4,8,12,16,20,24,28,32,36],0),
-#npc("Tora","Alchemist","Gather items to make better items.",[255],0),
+npc("Tora","Alchemist","Gather items to make better items.",[255],0),
 npc("Wolf","Blacksmith","Welcome! I'll enchant your weapons for a fair price!",[255],0)
 ]
 
@@ -56,7 +57,7 @@ def checknpc(floor):
     return npcs
 
 def healer(hero, npc):
-    sys.stdout.write("{}: {} [Y/N]".format(npc.i.name,npc.i.welcome))
+    sys.stdout.write("{}: {} [Y/N]\n".format(npc.i.name,npc.i.welcome))
     sys.stdout.flush()
     choose = 'Bleh'
     while choose != 'y' and choose != 'n':
@@ -92,3 +93,5 @@ def dothings(hero, npc, level):
         healer(hero, npc)
     elif npc.i.job == "Blacksmith" and len(hero.bag) != 0:
         blacksmith.forge(hero, npc)
+    elif npc.i.job == "Alchemist":
+        alchemist.alchemy(hero, npc)

@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
  
-import itemsys
+from itemsys import godmake, generate_item
 import help
 from inventory import convoy, printinv, update
 import collections
@@ -12,7 +12,7 @@ import tty
 import time
 import item
 import math
-import skills
+from skills import battleskillcheck
 from units import data, setclass, ispromote, getbase, getmax, paramcheck
 from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 
@@ -33,7 +33,7 @@ from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 #control variables
 current = 0
 MOVEABLE = ['.', '+', '#', '>','<','?','0'] #For a "ghost", add the following to the array: '-','|',None
-NPC_ICONS = ['!','п','*','г']
+NPC_ICONS = ['!','п','*','г','8']
 statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
 direction = None
 herodamage = 0
@@ -46,14 +46,14 @@ Y_DIM = 20
 NUM_ROOMS = (3, 5)
  
 # Min and Max height and width of a room
-ROOM_HEIGHT = (5, 8)
+ROOM_HEIGHT = (5, 10)
 ROOM_WIDTH = (5, 20)
  
 # Minimum separation between rooms
 MIN_SEP = 2
 
 # 10% an enemy will spawn for every move.
-MONSTER_PROB = 0.1
+MONSTER_PROB = 0.01
  
 Room = collections.namedtuple('Room', 'x y width height')
 Point = collections.namedtuple('Point', 'x y')
@@ -207,7 +207,7 @@ class hero:
         self.money = 1000
         self.type = setclass("Tactician")
         self.weapons = setclass("Tactician").weapons
-        self.stats = [19,6,5,70,6,4,6,4]
+        self.stats = [19,6,5,5,6,4,6,4]
         self.base = [40,40,35,35,35,55,30,20] #This is personal to the player. I will use this a lot for changing class.
         self.default = [0,0,0,0,0,0,0,0] #HP, Str, Mag, Skl, Spd, Lck, Def, Res
         self.modify = [0,0,0,0,0,0,0,0] #This will be static once assets and flaws are determined
@@ -222,9 +222,9 @@ class hero:
         self.actuallvl = 1
         self.displvl = 1
         self.bag = []
-        self.convoy = []
+        self.convoy = [godmake("Silver Sword"),godmake("Silver Sword"),godmake("Silver Sword"),godmake("Killing Edge"),godmake("Talisman"),godmake("Leif's Blade"),godmake("Speedwing"),godmake("Eirika's Blade")]
         self.equip = None
-        self.skillset = ["Astra"]
+        self.skillset = []
         self.inactiveskills = []
  
     def expgain(self,exp):
@@ -492,26 +492,6 @@ class hero:
         time.sleep(2)
         return
 
-    def battleskillcheck(self, target, damage):
-        active = random.randrange(100)
-        for i in range(len(self.skillset)):
-            skill = self.skillset[i]
-            if skill == "Lethality" and skill <= int(active / 4): #Arranging order by priority, must be hard-coded
-                return skills.Lethality(self, target)
-            elif skill == "Aether" and skill <= int(active / 2):
-                return skills.Aether(self, target, damage)
-            elif skill == "Astra" and skill <= int(active / 2):
-                return skills.Astra(self, target, damage)
-            elif skill == "Sol" and skill <= int(active):
-                return skills.Sol(self, target, damage)
-            elif skill == "Luna" and skill <= int(active):
-                return skills.Luna(self, target, damage)
-            elif skill == "Ignis" and skill <= int(active):
-                return skills.Ignis(self, target, damage)
-            elif skill == "Vengeance" and skill <= int(active * 2):
-                return skills.Vengeance(self, target, damage)
-        return self.attacking(target, damage)
-
     def howtoattack(self,target):
         if self.equip == None:
             return self.struggle(target)
@@ -521,7 +501,7 @@ class hero:
                 dmg += self.strength
             else:
                 dmg += self.magic
-            return self.battleskillcheck(target, dmg)
+            return battleskillcheck(self, target, dmg)
 
     def struggle(self,target):
         damage = 0
@@ -767,7 +747,7 @@ def add_to_floor(level, room, item):
     return p
  
 def make_item(level, p):
-    i = item.itemwrapper(itemsys.generate_item(), level, p.x, p.y)
+    i = item.itemwrapper(generate_item(), level, p.x, p.y)
     items.append(i)
  
 def add_item(level, room, item):
@@ -858,7 +838,15 @@ def make_level():
             else:
 #               print("There is no shop on this floor.")
                 npcpoint = generate(level,'г')
-            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))    
+            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
+        elif npclist[i].job == "Alchemist":
+            if npcpoint != None:
+#                print("This will be next to shop.")
+                npcpoint = place(level,npcpoint,'8')
+            else:
+#               print("There is no shop on this floor.")
+                npcpoint = generate(level,'8')
+            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
         else:
             npcpoint = generate(level,'!')
             npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
@@ -920,6 +908,7 @@ def read_key():
 if __name__ == '__main__':
     
     loadnpc()
+#   item.printformula()
 #   paramcheck() 
     # Initialize the first level
     current = 0
@@ -961,9 +950,10 @@ if __name__ == '__main__':
 ## Initial Inventory (for debugging) ##############################################
     
     init = []
-    init.append(item.itemwrapper(itemsys.make_item("Vulnerary"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Silver Sword"), 1, char.position.x, char.position.y))
-    init.append(item.itemwrapper(itemsys.make_item("Celica's Gale"), 1, char.position.x, char.position.y))
+    init.append(godmake("Vulnerary"))
+    init.append(godmake("Silver Sword"))
+    init.append(godmake("Thoron"))
+    init.append(godmake("Sol"))
     for i in range(len(init)):
         char.bag.append(init[i])
     
@@ -1007,8 +997,8 @@ if __name__ == '__main__':
 #                print("One item at {}, {} and I'm at {}, {}.".format(items[a].x,items[a].y,char.position.x,char.position.y))
                 if items[a].x == char.position.x and items[a].y == char.position.y:
                     it = items[a]
-            if len(char.bag) < capacity:
-                bag.append(it)
+            if len(char.bag) < char.capacity:
+                char.bag.append(it)
                 level[char.position.x][char.position.y] = '.'
                 print("{} obtained.".format(it.obj.name))
                 items.remove(it)
@@ -1185,7 +1175,7 @@ if __name__ == '__main__':
                     monsters.remove(m)
                     sys.stdout.write('{} has killed a {}.\n'.format(char.name, m.name))
                     if char.displvl < 20:
-                        print('Dealt {} damage.'.format(herodamage))
+#                       print('Dealt {} damage.'.format(herodamage))
                         char.expgain(char.calcexp(m,herodamage,True))
                     wait = True
                     continue
@@ -1212,7 +1202,7 @@ if __name__ == '__main__':
                 char.expgain(char.calcexp(target,herodamage,False))
 
         #Update inventory here
-            update()
+            update(char)
 
         if wait:
             sys.stdout.flush()

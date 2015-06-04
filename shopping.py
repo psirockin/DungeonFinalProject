@@ -86,7 +86,7 @@ def buy(hero,npc,level,addlist):
                 select = int(read_key())
                 if select == len(canbuy):
                     return
-                if select >= 0 and select <= len(canbuy):
+                if select >= 0 and select < len(canbuy):
                     reasonable = True
             except ValueError:
                 print("What?")
@@ -109,7 +109,7 @@ def buy(hero,npc,level,addlist):
             else:
                 print(buildquote(shopquotes[npc.i.level][4],[canbuy[select].name]))
                 hero.money -= canbuy[select].cost
-                hero.bag.append(itemwrapper(canbuy[select], level, hero.position.x, hero.position.y))
+                hero.bag.append(itemwrapper(canbuy[select], None, None, None))
         time.sleep(1)
     return
 

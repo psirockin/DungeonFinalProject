@@ -56,7 +56,7 @@ def rename(hero):
 #           print('{} wields a {}.'.format(select, hero.bag[select].name))
             if select == len(hero.bag):
                 return
-            elif select >= 0 and select <= len(hero.bag):
+            elif select >= 0 and select < len(hero.bag):
                 if (hero.bag[select].obj.type == "W" or hero.bag[select].obj.type == "M") and hero.bag[select].obj.cost != 0:
                     reasonable = True #Because you cannot edit legendary weapons
                 else:

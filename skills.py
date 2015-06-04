@@ -1,9 +1,37 @@
 import random
 import sys
-# If you do not have a weapon, you do not get to use any attack skills. Sorry.
+# If you do not have a weapon, you do not get to use any attack  Sorry.
 
 battleskills = ["Lethality","Aether","Astra","Luna","Ignis","Vengeance","Sol"]
 internalskills = ["HP +5","Str +2","Mag +2","Skl +2","Spd +2","Lck +2","Def +2","Res +2"]
+
+def setupskills(hero):
+    allskills = hero.skillset
+    if hero.equip.obj.effect != None:
+        allskills.append(hero.equip.obj.effect)
+    return allskills
+
+def battleskillcheck(hero, target, damage):
+        sk = setupskills(hero)
+        active = random.randrange(100)
+        if len(sk) != 0:
+            for i in range(len(sk)):
+                skill = sk[i]
+                if skill == "Lethality" and int(hero.skill/4) >= active: #Arranging order by priority, must be hard-coded
+                    return Lethality(hero, target)
+                elif skill == "Aether" and int(hero.skill/2) >= active:
+                    return Aether(hero, target, damage)
+                elif skill == "Astra" and int(hero.skill/2) >= active:
+                    return Astra(hero, target, damage)
+                elif skill == "Sol" and hero.skill >= active:
+                    return Sol(hero, target, damage)
+                elif skill == "Luna" and hero.skill >= active:
+                    return Luna(hero, target, damage)
+                elif skill == "Ignis" and hero.skill >= active:
+                    return Ignis(hero, target, damage)
+                elif skill == "Vengeance" and hero.skill * 2 >= active:
+                    return Vengeance(hero, target, damage)
+        return hero.attacking(target, damage)
 
 def Lethality(hero, target): #This will be player only because hax sucks
     print("Lethality activated! ")
@@ -13,6 +41,7 @@ def Lethality(hero, target): #This will be player only because hax sucks
 def Astra(hero, target, damage): #halves damage, but allows the unit to hit 5 times
     times = 0
     accum = 0
+    print("Astra activated! ")
     while times < 5 and target.HP > 0:
         hit = hero.attacking(target, int(damage / 2))
         accum += hit
@@ -32,6 +61,7 @@ def Sol(hero, target, damage):
     sys.stdout.write("Sol activated! ")
     hero.attacking(target, damage)
     hero.heal(int(damage/2))
+    return damage
 
 def Ignis(hero, target, damage):
     sys.stdout.write("Ignis activated! ")
@@ -39,18 +69,40 @@ def Ignis(hero, target, damage):
         damage += int(hero.magic/2) 
     else:
         damage += int(hero.strength/2)
-    hero.attacking(target,damage)
+    return hero.attacking(target,damage)
 
 def Aether(hero, target, damage):
     sys.stdout.write("Aether activated! ")
-    Sol(hero, target, damage)
+    dmg = 0
+    dmg += Aether1(hero, target, damage)
     if target.HP <= 0:
-        Luna(target, damage)
+        dmg += Aether2(hero, target, damage)
+    return dmg
+
+def Aether1(hero, target, damage):
+    hero.attacking(target, damage)
+    hero.heal(int(damage/2))
+    return damage
+
+def Aether2(hero, target, damage):
+    if hero.equip.obj.type == "W":
+        damage += int(hero.strength / 2)
+    else:
+        damage += int(hero.magic / 2)
+    return hero.attacking(target, damage)
 
 def Vengeance(hero, target, damage):
     sys.stdout.write("Vengeance activated! ")
     damage += int((hero.maxHP - hero.HP) / 2)
-    hero.attacking(target, damage)
+    return hero.attacking(target, damage)
+
+def Despoil(hero):
+    sys.stdout.write("Despoil activated! Gained 1000G.")
+    hero.money += 1000
+
+def Lifetaker(hero):
+    sys.stdout.write("Lifetaker activated! ")
+    hero.heal(int(hero.maxHP / 2))
 
 '''
 public class Skills{
