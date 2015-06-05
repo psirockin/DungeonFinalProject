@@ -148,13 +148,13 @@ catalog = [
     weapon("Brave Sword","Attack twice!","Sword",9,80,0,"Brave",None,[None],2100,"W",1,30,[26,30],[14,16,17,20,21,22,23,24,25],[]),
     weapon("Brave Lance","Attack twice!","Lance",10,70,0,"Brave",None,[None],2220,"W",1,30,[26,28],[14,16,17,20,21,22,23,24,25],[]),
     weapon("Brave Axe","Attack twice!","Axe",12,60,0,"Brave",None,[None],2400,"W",1,30,[26,27],[14,16,17,20,21,22,23,24,25],[]),
-    weapon("Brave Bow","Attack twice!","Bow",10,70,0,"Brave",None,["Wing"],2220,"W",2,30,[26,29],[14,16,17,20,21,22,23,24,25],[]),
+    weapon("Brave Bow","Attack twice!","Bow",10,70,0,"Brave",None,["Wing"],2220,"W",2,30,[26,29],[14,16,17,20,21,22,23,24,25],[])   
+],
+ [
     weapon("Sol","Chance to recover half HP.","Sword",12,85,5,"Sol",None,[None],0,"W",1,30,[None],[None],["Silver Sword","Nosferatu"]),
     weapon("Luna","Chance to half opponent's defenses during damage calculation.","Lance",14,80,5,"Luna",None,[None],0,"W",1,30,[None],[None],["Silver Lance","Superior Lance"]),
     weapon("Astra","Chance to attack opponent five times with half damage.","Bow",14,75,5,"Astra",None,["Wing"],0,"W",2,30,[None],[None],["Silver Bow","Superior Bow"]),
-    weapon("Vengeance","Adds damage equal to half of the damage taken to attack.","Axe",16,75,5,"Vengeance",None,[None],0,"W",1,30,[None],[None],["Silver Axe","Superior Axe"])
-],
- [
+    weapon("Vengeance","Adds damage equal to half of the damage taken to attack.","Axe",16,75,5,"Vengeance",None,[None],0,"W",1,30,[None],[None],["Silver Axe","Superior Axe"]),
     weapon("Valflame","Fala's fire magic. Mgc +5.","Magic",16,80,10,None,None,[None],0,"M",2,25,[None],[None],["Bolganone","Spirit Dust","Dying Blaze"]),
     weapon("Mjolnir","Tordo's thunder magic. Skl +5.","Magic",18,70,20,None,None,[None],0,"M",2,25,[None],[None],["Thoron","Secret Book","Katarina's Bolt"]),
     weapon("Forseti","Holsety's wind magic. Spd +5.","Magic",14,90,10,None,None,["Wing"],0,"M",2,25,[None],[None],["Rexcalibur","Speedwing","Celica's Gale"]),

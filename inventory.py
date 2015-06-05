@@ -36,10 +36,17 @@ def printinv(hero, level, pos, itemlocs, didyoumove, inv, command):
         obj = inv[i]
         sys.stdout.write("{}: {} {}\n".format(i, obj.name, obj.dur))
     print("{}: Back\n".format(len(inv)))
-    k = int(read_key())
-    if k == len(inv):
-        return
-    elif command == "BAG":
+    o = False
+    while o == False:
+        try:
+            k = int(read_key())
+            if k == len(inv):
+                return
+            elif k >= 0 and k < len(inv):
+                o = True 
+        except ValueError:
+            continue
+    if command == "BAG":
         dothis(hero, k, level, pos, itemlocs, didyoumove, inv)
     elif command == "TAKE OUT":
         take_out(hero, k, level, pos, itemlocs, didyoumove)
@@ -56,18 +63,20 @@ def dothis(hero, a, level, pos, itemlocs, moving, inv):
             elif a >= 0 and a < len(inv):
                 o = True 
         except ValueError:
-                continue
+            continue
     select = a
     interact(hero, select, level, pos, itemlocs, moving)
 
 def unequip(hero, item):
     hero.equip = None
     print("Unequipped {}.".format(item.name))
+    hero.calc_things()
 
 def equip(hero, item):
     if hero.equip == None and item.obj.school in hero.type.weapons:
         hero.equip = item
         print("Equipped {}.".format(item.name))
+        hero.calc_things()
     else:
         print("You can't equip this!")
     time.sleep(1)
@@ -78,12 +87,10 @@ def change(hero, takeout, takein):
     equip(hero, takein)
 
 def drop(hero, i, level, pos, itemlocs):
-    if hero.equip != None and i.obj == hero.equip.obj:
-        equip(hero, i)
     index = [-1,0,1]
     for a in range(3):
         for b in range(3):
-            if level[pos.x+index[a]][pos.y+index[b]] == '.' and a != 1 and b != 1:
+            if (level[pos.x+index[a]][pos.y+index[b]] == '.' or level[pos.x+index[a]][pos.y+index[b]] == '#') and (level[pos.x+index[a]][pos.y+index[b]] != pos):
                 level[pos.x+index[a]][pos.y+index[b]] = i
                 level[pos.x+index[a]][pos.y+index[b]] = '?'                
                 i.level = level
@@ -92,7 +99,22 @@ def drop(hero, i, level, pos, itemlocs):
 #               print("This is at {}, {}.".format(i.x,i.y))
                 itemlocs.append(i)
                 hero.bag.remove(i)
-                return
+                return 
+    print("No dropping locations available.")
+
+def enemydrop(i, level, pos, itemlocs):
+    index = [-1,0,1]
+    for a in range(3):
+        for b in range(3):
+            if level[pos.x+index[a]][pos.y+index[b]] == '.' or level[pos.x+index[a]][pos.y+index[b]] == '#':
+                level[pos.x+index[a]][pos.y+index[b]] = i
+                level[pos.x+index[a]][pos.y+index[b]] = '?'                
+                i.level = level
+                i.x = pos.x + index[a]
+                i.y = pos.y + index[b]
+                print("This is at {}, {}.".format(i.x,i.y))
+                itemlocs.append(i)
+                return i.name
     print("No dropping locations available.")
 
 def sell(hero, i):
@@ -177,11 +199,14 @@ def interact(hero, c, level, pos, itemlocs, moving):
                     moving = False
                 if used:
                     obj.dur -= 1
+                    update()
             elif a == '3':
                 print(obj.obj.desc)
                 moving = False
                 time.sleep(2)
             elif a == '4':
+                if hero.equip != None and obj.obj == hero.equip.obj:
+                    equip(hero, i)
                 drop(hero, obj, level, pos, itemlocs)
                 moving = True
             elif a == '5':

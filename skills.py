@@ -7,7 +7,7 @@ internalskills = ["HP +5","Str +2","Mag +2","Skl +2","Spd +2","Lck +2","Def +2",
 
 def setupskills(hero):
     allskills = hero.skillset
-    if hero.equip.obj.effect != None:
+    if hero.equip != None and hero.equip.obj.effect != None:
         allskills.append(hero.equip.obj.effect)
     return allskills
 
@@ -33,10 +33,43 @@ def battleskillcheck(hero, target, damage):
                     return Vengeance(hero, target, damage)
         return hero.attacking(target, damage)
 
+def postbattlecheck(hero, target):
+    sk = setupskills(hero)
+    if len(sk) != 0:
+        for i in range(len(sk)): #skills can be simultaneously activated
+            skill = sk[i]
+            if target.isdead():
+                if skill == "Despoil" and hero.luck >= random.randrange(100):
+                    Despoil(hero)            
+                if skill == "Lifetaker":
+                    Lifetaker(hero)
+
+def midbattlecheck(hero, target):
+    sk = setupskills(hero)
+    if len(sk) != 0:
+        for i in range(len(sk)):
+            skill = sk[i]
+            if skill == "Miracle":
+                Miracle(hero)           
+
+def Armsthrift(hero):
+    sk = setupskills(hero)
+    if len(sk) != 0:
+        for i in range(len(sk)):
+            skill = sk[i]
+            if skill == "Armsthrift":
+                activate = random.randrange(100) <= hero.luck * 2
+                if activate:
+                    print("Armsthrift activated!")
+                    return True
+                return False
+    return False
+
 def Lethality(hero, target): #This will be player only because hax sucks
     print("Lethality activated! ")
+    dmg = target.HP
     target.HP = 0
-    return True
+    return dmg
 
 def Astra(hero, target, damage): #halves damage, but allows the unit to hit 5 times
     times = 0
@@ -59,9 +92,9 @@ def Luna(hero, target, damage):
 
 def Sol(hero, target, damage):
     sys.stdout.write("Sol activated! ")
-    hero.attacking(target, damage)
-    hero.heal(int(damage/2))
-    return damage
+    d = hero.attacking(target, damage)
+    hero.heal(int(d/2))
+    return d
 
 def Ignis(hero, target, damage):
     sys.stdout.write("Ignis activated! ")

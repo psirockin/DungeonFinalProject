@@ -2,7 +2,7 @@
  
 from itemsys import godmake, generate_item
 import help
-from inventory import convoy, printinv, update
+from inventory import convoy, printinv, update, enemydrop
 import collections
 import copy
 import random
@@ -10,9 +10,9 @@ import sys
 import termios
 import tty
 import time
-import item
+from item import catalog, itemwrapper, printformula, weapon
 import math
-from skills import battleskillcheck
+from skills import battleskillcheck, postbattlecheck, Armsthrift
 from units import data, setclass, ispromote, getbase, getmax, paramcheck
 from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 
@@ -32,6 +32,7 @@ from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
  
 #control variables
 current = 0
+level = None
 MOVEABLE = ['.', '+', '#', '>','<','?','0'] #For a "ghost", add the following to the array: '-','|',None
 NPC_ICONS = ['!','п','*','г','8']
 statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
@@ -53,7 +54,7 @@ ROOM_WIDTH = (5, 20)
 MIN_SEP = 2
 
 # 10% an enemy will spawn for every move.
-MONSTER_PROB = 0.01
+MONSTER_PROB = 0.1
  
 Room = collections.namedtuple('Room', 'x y width height')
 Point = collections.namedtuple('Point', 'x y')
@@ -82,6 +83,8 @@ class Monster:
     def __init__(self, pos, name, what, base, growths):
         self.pos = pos
         self.name = name
+        self.type = setclass(name)
+        self.weapons = setclass(name).weapons
         self.what = what
         self.stats = base
         self.max = getmax(self.name)
@@ -89,8 +92,24 @@ class Monster:
         self.growth = growths
         self.equip = None
         self.old = '.' # monsters always spawn on a '.'
+        self.skillset = []
         self.setstats()
         self.bonuses()
+        self.setequip()        
+
+    def setequip(self):
+        possible = []
+#       print("I should be able to use {}.".format(self.weapons))
+        for i in range(1,int(current/8)+2,1):
+            for j in range(len(catalog[i])):
+                if isinstance(catalog[i][j], weapon) and catalog[i][j].school in self.weapons:
+                    possible.append(catalog[i][j])
+#       print("There are {} possible weapons for me to equip.".format(len(possible)))
+        if len(possible) != 0:
+            name = possible[random.randrange(len(possible))].name
+            self.equip = godmake(name)
+#           print("I have a {}.".format(self.equip.name))
+            self.calc_things()
 
     def setstats(self):
         self.maxHP = self.stats[0]
@@ -102,6 +121,7 @@ class Monster:
         self.luck = self.stats[5]
         self.defense = self.stats[6]
         self.resist = self.stats[7]
+        self.calc_things()
 
     def bonuses(self):
         difficulty = int((current + 1) / 4)
@@ -124,6 +144,9 @@ class Monster:
 
     def die(self, level):
         level[self.pos.x][self.pos.y] = self.old
+    
+    def isdead(self):
+        return self.HP <= 0
             
     def grow(self, lvl): #These growth rates are automated.
         for c in range(lvl):
@@ -133,62 +156,73 @@ class Monster:
                     self.stats[i] += 1
             self.setstats()
     
+    def calc_things(self):
+        self.calc_hit()
+        self.calc_avoid()
+        self.calc_crit()
+
+    def calc_hit(self):
+        if self.equip != None:
+            self.hit = self.equip.accuracy + int((self.skill * 3 + self.luck) / 2)
+        else:
+            self.hit = 50 + int((self.skill * 3 + self.luck) / 2)
+
+    def calc_avoid(self):
+        self.avoid = int((self.speed * 3 + self.luck)/2)
+
+    def calc_crit(self):
+        if self.equip != None:
+            self.crit = self.equip.critical + int(self.skill / 2)
+        else:
+            self.crit = int(self.skill / 2)
+
     def howtoattack(self,target):
         if self.equip == None:
             return self.struggle(target)
         else:
-            return self.attacking(self.equip, target, 0)
+            dmg = self.equip.attack
+            if self.equip.obj.type == "W":
+                dmg += self.strength
+            else:
+                dmg += self.magic
+            return battleskillcheck(self, target, dmg)
 
     def struggle(self,target):
         damage = 0
-        critical = (random.randrange(100) <= self.skill / 2)
-        accuracy = 100 + (self.skill * 3 + self.luck) / 2
-        if accuracy < random.randrange(100):
+        hit_rate = self.hit - target.avoid
+        crit = self.crit - target.luck
+        if hit_rate < random.randrange(100):
             sys.stdout.write("Missed! ")
             return 0
         damage = self.strength - target.defense
         if damage <= 0:
                 damage = 1
-        if critical:
+        if crit:
                 damage *= 3
                 sys.stdout.write("CRITICAL! ")
         target.HP -= damage
         return damage
 
-    def attacking(self, weapon, target, damage):
+    def attacking(self, target, damage):
         miss = False
-        critical = (random.randrange(100) <= weapon.critical + self.skill / 2)
-        accuracy = weapon.accuracy + (self.skill * 3 + self.luck) / 2
-        ############ These are all skill checks
-            
-
-        ############
-        if accuracy < random.randrange(100):
+        hit_rate = self.hit - target.avoid
+        crit = self.crit - target.luck
+        if hit_rate < random.randrange(100):
             sys.stdout.write("Missed! ")
-            miss = True
+            return 0
         if miss == False:
-            if weapon.obj.type == "W":
-                damage += self.strength + weapon.attack - target.defense
-                if damage <= 0:
-                    damage = 1
-                if critical:
-                    sys.stdout.write("CRITICAL! " )
-                    damage *= 3
-                target.HP -= damage
-                if weapon.obj.effect == "Drain": 
-                    self.heal(int(damage * .5))                    
-            elif weapon.obj.type == "M":
-                damage += self.magic + weapon.attack - target.resist
-                if damage <= 0:
-                    damage = 1
-                if critical:
-                    sys.stdout.write("CRITICAL! " )
-                    damage *= 3
-                target.HP -= damage
-                if weapon.obj.effect == "Drain":
-                    self.heal(int(damage * .5))
-        weapon.dur -= 1
-        return damage
+            if damage <= 0:
+                return 0
+            if crit:
+                sys.stdout.write("CRITICAL! " )
+                damage *= 3
+            target.HP -= damage
+            if not Armsthrift(self):
+                self.equip.dur -= 1
+            if self.equip.obj.effect == "Drain": 
+                self.heal(int(damage * .5))  
+            return damage
+        return 0
 
     def heal(self,amount):
         self.HP += amount
@@ -222,9 +256,9 @@ class hero:
         self.actuallvl = 1
         self.displvl = 1
         self.bag = []
-        self.convoy = [godmake("Silver Sword"),godmake("Silver Sword"),godmake("Silver Sword"),godmake("Killing Edge"),godmake("Talisman"),godmake("Leif's Blade"),godmake("Speedwing"),godmake("Eirika's Blade")]
+        self.convoy = []
         self.equip = None
-        self.skillset = []
+        self.skillset = ["Sol"]
         self.inactiveskills = []
  
     def expgain(self,exp):
@@ -439,6 +473,7 @@ class hero:
         self.luck = self.stats[5]
         self.defense = self.stats[6]
         self.resist = self.stats[7]
+        self.calc_things()
  
     def set_position(self, newpos):
         self.position = newpos
@@ -491,6 +526,26 @@ class hero:
         self.actuallvl = self.displvl + self.culmlvl + self.promoted
         time.sleep(2)
         return
+    
+    def calc_things(self):
+        self.calc_hit()
+        self.calc_avoid()
+        self.calc_crit()
+
+    def calc_hit(self):
+        if self.equip != None:
+            self.hit = self.equip.accuracy + int((self.skill * 3 + self.luck) / 2)
+        else:
+            self.hit = 50 + int((self.skill * 3 + self.luck) / 2)
+
+    def calc_avoid(self):
+        self.avoid = int((self.speed * 3 + self.luck)/2)
+
+    def calc_crit(self):
+        if self.equip != None:
+            self.crit = self.equip.critical + int(self.skill / 2)
+        else:
+            self.crit = int(self.skill / 2)
 
     def howtoattack(self,target):
         if self.equip == None:
@@ -505,15 +560,15 @@ class hero:
 
     def struggle(self,target):
         damage = 0
-        critical = (random.randrange(100) <= self.skill / 2)
-        accuracy = 100 + (self.skill * 3 + self.luck) / 2
-        if accuracy < random.randrange(100):
+        hit_rate = self.hit - target.avoid
+        crit = self.crit - target.luck
+        if hit_rate < random.randrange(100):
             sys.stdout.write("Missed! ")
             return 0
         damage = self.strength - target.defense
         if damage <= 0:
                 damage = 1
-        if critical:
+        if crit:
                 damage *= 3
                 sys.stdout.write("CRITICAL! ")
         target.HP -= damage
@@ -521,19 +576,20 @@ class hero:
 
     def attacking(self, target, damage):
         miss = False
-        critical = (random.randrange(100) <= self.equip.critical + self.skill / 2)
-        accuracy = self.equip.accuracy + (self.skill * 3 + self.luck) / 2
-        if accuracy < random.randrange(100):
+        hit_rate = self.hit - target.avoid
+        crit = self.crit - target.luck
+        if hit_rate < random.randrange(100):
             sys.stdout.write("Missed! ")
-            miss = True
+            return 0
         if miss == False:
             if damage <= 0:
                 return 0
-            if critical:
+            if crit:
                 sys.stdout.write("CRITICAL! " )
                 damage *= 3
             target.HP -= damage
-            self.equip.dur -= 1
+            if not Armsthrift(self):
+                self.equip.dur -= 1
             if self.equip.obj.effect == "Drain": 
                 self.heal(int(damage * .5))  
             return damage
@@ -747,7 +803,7 @@ def add_to_floor(level, room, item):
     return p
  
 def make_item(level, p):
-    i = item.itemwrapper(generate_item(), level, p.x, p.y)
+    i = itemwrapper(generate_item(), level, p.x, p.y)
     items.append(i)
  
 def add_item(level, room, item):
@@ -882,7 +938,7 @@ def print_level(level):
                         break
             else:
                 sys.stdout.write(level[i][j])
-        sys.stdout.write('\n') 
+        sys.stdout.write('\n')
  
  
 def read_key():
@@ -908,7 +964,7 @@ def read_key():
 if __name__ == '__main__':
     
     loadnpc()
-#   item.printformula()
+#   printformula()
 #   paramcheck() 
     # Initialize the first level
     current = 0
@@ -985,12 +1041,15 @@ if __name__ == '__main__':
         sys.stdout.write('\n')
         if char.equip != None:
             if char.equip.dur == 1:
-                sys.stdout.write('Equipped: {}, which has 1 use. Floor: {} Coins: {}'.format(char.equip.name,current+1,char.coins))
+                sys.stdout.write('Equipped: {}, which has 1 use. Floor: {} Coins: {}\n'.format(char.equip.name,current+1,char.coins))
             else:
-                sys.stdout.write('Equipped: {}, which has {} uses. Floor: {} Coins: {}'.format(char.equip.name, char.equip.dur,current+1,char.coins))
+                sys.stdout.write('Equipped: {}, which has {} uses. Floor: {} Coins: {}\n'.format(char.equip.name, char.equip.dur,current+1,char.coins))
         else:
-            sys.stdout.write('Equipped: Nothing! Floor: {} Coins: {}'.format(current+1,char.coins))
-        sys.stdout.write('\n')
+            sys.stdout.write('Equipped: Nothing! Floor: {} Coins: {}\n'.format(current+1,char.coins))
+        skillstr = "Skills: "
+        for i in range(len(char.skillset)):
+            skillstr += char.skillset[i] + " "
+        sys.stdout.write('{}\n'.format(skillstr))
  
         if level[char.position.x][char.position.y] == '?':
             for a in range(len(items)):
@@ -999,7 +1058,12 @@ if __name__ == '__main__':
                     it = items[a]
             if len(char.bag) < char.capacity:
                 char.bag.append(it)
-                level[char.position.x][char.position.y] = '.'
+                if '#' in surroundings(level, char.position) and '.' in surroundings(level, char.position):
+                    level[char.position.x][char.position.y] = '+'
+                elif '.' in surroundings(level, char.position):
+                    level[char.position.x][char.position.y] = '.'
+                else:
+                    level[char.position.x][char.position.y] = '#'
                 print("{} obtained.".format(it.obj.name))
                 items.remove(it)
             else:
@@ -1157,6 +1221,7 @@ if __name__ == '__main__':
                         if char.equip != None and char.equip.dur > 0 and char.equip.obj.effect == "Brave" and m.HP > 0:
                             herodamage = char.howtoattack(m)
                             sys.stdout.write('ATTACK AGAIN! {} has dealt {} damage to {}.\n'.format(char.name, herodamage, m.name))
+                        postbattlecheck(char, m)
                         if m.HP > 0:
                             exppending = True
                             target = m             
@@ -1171,9 +1236,14 @@ if __name__ == '__main__':
             # Update the monsters
             for m in monsters:
                 if m.HP <= 0:
+                    itemname = None
                     m.die(level)
+                    if char.luck >= random.randrange(100): #Equipped weapons will drop at a rate equal to luck
+                        itemname = enemydrop(m.equip, level, m.pos, items)
                     monsters.remove(m)
                     sys.stdout.write('{} has killed a {}.\n'.format(char.name, m.name))
+                    if itemname != None:
+                        sys.stdout.write('The fallen enemy dropped a {}!\n'.format(itemname))
                     if char.displvl < 20:
 #                       print('Dealt {} damage.'.format(herodamage))
                         char.expgain(char.calcexp(m,herodamage,True))
