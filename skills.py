@@ -137,6 +137,10 @@ def Lifetaker(hero):
     sys.stdout.write("Lifetaker activated! ")
     hero.heal(int(hero.maxHP / 2))
 
+def WeaponBreaker(hit, avoid):
+    hit -= 50
+    avoid -= 50
+    return True
 '''
 public class Skills{
 
