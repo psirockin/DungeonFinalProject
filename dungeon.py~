@@ -1139,7 +1139,7 @@ if __name__ == '__main__':
                 sys.stdout.write('Equipped: {}, which has {} uses. Floor: {} Coins: {}\n'.format(char.equip.name, char.equip.dur,current+1,char.coins))
         else:
             sys.stdout.write('Equipped: Nothing! Floor: {} Coins: {}\n'.format(current+1,char.coins))
-        s = ""
+        s = None
         for i in range(len(char.skillset)):
             s += char.skillset[i] + " "
         print("Skills: {}".format(s))

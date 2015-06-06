@@ -39,6 +39,12 @@ unit("General",["Armor"],["Lance","Axe"],[50,25,0,15,10,0,15,10],None,[28,12,0,7
 ]
 ]
 
+def getgrowth(theclass):
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            if theclass == data[i][j].name:
+                return data[i][j].base
+
 def setclass(theclass):
     for i in range(len(data)):
         for j in range(len(data[i])):

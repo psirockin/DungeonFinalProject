@@ -2,67 +2,123 @@ import random
 import sys
 # If you do not have a weapon, you do not get to use any attack  Sorry.
 
+notskill = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist","Brave","Drain"]
+faireskills = ["Swordfaire","Lancefaire","Axefaire","Bowfaire","Tomefaire"]
+breakerskills = ["Swordbreaker","Lancebreaker","Axebreaker","Bowbreaker","Tomebreaker"]
 battleskills = ["Lethality","Aether","Astra","Luna","Ignis","Vengeance","Sol"]
 internalskills = ["HP +5","Str +2","Mag +2","Skl +2","Spd +2","Lck +2","Def +2","Res +2"]
+
+def nihilcheck(hero, target): #checks if enemy has Nihil
+    sk = setupskills(target)
+    if len(sk) != 0 and 'Nihil' in target.skillset:
+        return Nihil(target)
+    return False
 
 def setupskills(hero):
     allskills = hero.skillset
     if hero.equip != None and hero.equip.obj.effect != None:
-        allskills.append(hero.equip.obj.effect)
+        for i in range(len(hero.equip.obj.effect)):
+                if hero.equip.obj.effect not in notskill:
+                    allskills.append(hero.equip.obj.effect)
     return allskills
 
-def battleskillcheck(hero, target, damage):
+def battleskillcheck(hero, target, damage, nihil):
         sk = setupskills(hero)
         active = random.randrange(100)
-        if len(sk) != 0:
+        if len(sk) != 0 and not nihil:
             for i in range(len(sk)):
-                skill = sk[i]
-                if skill == "Lethality" and int(hero.skill/4) >= active: #Arranging order by priority, must be hard-coded
-                    return Lethality(hero, target)
-                elif skill == "Aether" and int(hero.skill/2) >= active:
-                    return Aether(hero, target, damage)
-                elif skill == "Astra" and int(hero.skill/2) >= active:
-                    return Astra(hero, target, damage)
-                elif skill == "Sol" and hero.skill >= active:
-                    return Sol(hero, target, damage)
-                elif skill == "Luna" and hero.skill >= active:
-                    return Luna(hero, target, damage)
-                elif skill == "Ignis" and hero.skill >= active:
-                    return Ignis(hero, target, damage)
-                elif skill == "Vengeance" and hero.skill * 2 >= active:
-                    return Vengeance(hero, target, damage)
-        return hero.attacking(target, damage)
+                if sk[i] != None:
+                    skill = sk[i]
+                    if skill == "Lethality" and int(hero.skill/4) >= active: #Arranging order by priority, must be hard-coded
+                        return Lethality(hero, target)
+                    elif skill == "Aether" and int(hero.skill/2) >= active:
+                        return Aether(hero, target, damage)
+                    elif skill == "Astra" and int(hero.skill/2) >= active:
+                        return Astra(hero, target, damage)
+                    elif skill == "Sol" and hero.skill >= active:
+                        return Sol(hero, target, damage)
+                    elif skill == "Luna" and hero.skill >= active:
+                        return Luna(hero, target, damage)
+                    elif skill == "Ignis" and hero.skill >= active:
+                        return Ignis(hero, target, damage)
+                    elif skill == "Vengeance" and hero.skill * 2 >= active:
+                        return Vengeance(hero, target, damage)
+        return hero.attacking(target, damage, nihil)
 
 def postbattlecheck(hero, target):
     sk = setupskills(hero)
     if len(sk) != 0:
         for i in range(len(sk)): #skills can be simultaneously activated
-            skill = sk[i]
-            if target.isdead():
-                if skill == "Despoil" and hero.luck >= random.randrange(100):
-                    Despoil(hero)            
-                if skill == "Lifetaker":
-                    Lifetaker(hero)
+            if sk[i] != None:
+                skill = sk[i]
+                if target.isdead():
+                    if skill == "Despoil" and hero.luck >= random.randrange(100):
+                        Despoil(hero)            
+                    if skill == "Lifetaker":
+                        Lifetaker(hero)
+
+def breakercheck(hit, hero, target):
+    sk = setupskills(hero)
+    weapon = target.equip.obj.school
+    breaker = False
+    if "Swordbreaker" in sk and weapon == "Sword":
+        print("Swordbreaker activated!")
+        breaker = True
+    elif "Lancebreaker" in sk and weapon == "Lance":
+        print("Lancebreaker activated!")
+        breaker = True
+    elif "Axebreaker" in sk and weapon == "Axe":
+        print("Axebreaker activated!")
+        breaker = True
+    elif "Bowbreaker" in sk and weapon == "Bow":
+        print("Bowbreaker activated!")
+        breaker = True
+    elif "Tomebreaker" in sk and weapon == "Magic":
+        print("Tomebreaker activated!")
+        breaker = True
+    return breaker
+
+def secondbreakercheck(avoid, hero, target):
+    sk = setupskills(target)
+    weapon = hero.equip.obj.school
+    breaker = False
+    if "Swordbreaker" in sk and weapon == "Sword":
+        print("Swordbreaker activated!")
+        breaker = True
+    elif "Lancebreaker" in sk and weapon == "Lance":
+        print("Lancebreaker activated!")
+        breaker = True
+    elif "Axebreaker" in sk and weapon == "Axe":
+        print("Axebreaker activated!")
+        breaker = True
+    elif "Bowbreaker" in sk and weapon == "Bow":
+        print("Bowbreaker activated!")
+        breaker = True
+    elif "Tomebreaker" in sk and weapon == "Magic":
+        print("Tomebreaker activated!")
+        breaker = True
+    return breaker
 
 def midbattlecheck(hero, target):
     sk = setupskills(hero)
     if len(sk) != 0:
         for i in range(len(sk)):
-            skill = sk[i]
-            if skill == "Miracle":
-                Miracle(hero)           
+            if sk[i] != None:
+                skill = sk[i]
+                if skill == "Miracle":
+                    Miracle(hero)           
 
 def Armsthrift(hero):
     sk = setupskills(hero)
     if len(sk) != 0:
         for i in range(len(sk)):
-            skill = sk[i]
-            if skill == "Armsthrift":
-                activate = random.randrange(100) <= hero.luck * 2
-                if activate:
-                    print("Armsthrift activated!")
-                    return True
-                return False
+            if sk[i] != None:
+                skill = sk[i]
+                if skill == "Armsthrift":
+                    activate = random.randrange(100) <= hero.luck * 2
+                    if activate:
+                        print("Armsthrift activated!")
+                        return True
     return False
 
 def Lethality(hero, target): #This will be player only because hax sucks
@@ -70,6 +126,10 @@ def Lethality(hero, target): #This will be player only because hax sucks
     dmg = target.HP
     target.HP = 0
     return dmg
+
+def Nihil(target): #Blocks critical hits(FE4) and activation of other skills(FE4, 5, 9, 10). Amazing.
+    print("Nihil activated!")
+    return True
 
 def Astra(hero, target, damage): #halves damage, but allows the unit to hit 5 times
     times = 0
@@ -136,7 +196,6 @@ def Despoil(hero):
 def Lifetaker(hero):
     sys.stdout.write("Lifetaker activated! ")
     hero.heal(int(hero.maxHP / 2))
-
 '''
 public class Skills{
 

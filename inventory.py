@@ -5,6 +5,8 @@ from item import weapon
 import tty
 import termios
 
+statread = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist"]
+
 def read_key():
     '''
     Read a single key from stdin
@@ -23,11 +25,23 @@ def read_key():
 
 def take_out(hero, k, level, pos, itemlocs, moving):
     hero.bag.append(hero.convoy.pop(k))
-    printinv(hero, level, pos, itemlocs, moving, hero.convoy, "TAKE OUT")
+    if len(hero.bag) < hero.capacity and len(hero.convoy) != 0:
+        printinv(hero, level, pos, itemlocs, moving, hero.convoy, "TAKE OUT")
 
 def put_in(hero, k, level, pos, itemlocs, moving):
     hero.convoy.append(hero.bag.pop(k)) #Try to make a while loop in order to not take things out one at a time
-    printinv(hero, level, pos, itemlocs, moving, hero.bag, "PUT IN")
+    if len(hero.convoy) < hero.convoymax and len(hero.bag) != 0:
+        printinv(hero, level, pos, itemlocs, moving, hero.bag, "PUT IN")
+
+def take_skill(hero, k):
+    hero.skillset.append(hero.inactiveskills.pop(k))
+    if len(hero.inactiveskills) != 0 and len(hero.skillset) < 5:
+        printskills(hero, hero.inactiveskills, "TAKE OUT")
+
+def put_skill(hero, k):
+    hero.inactiveskills.append(hero.skillset.pop(k)) #Try to make a while loop in order to not take things out one at a time
+    if len(hero.skillset) != 0:
+        printskills(hero, hero.skillset, "PUT IN")
 
 def printinv(hero, level, pos, itemlocs, didyoumove, inv, command):
     sys.stdout.write("\x1b[2J\x1b[H")
@@ -53,6 +67,33 @@ def printinv(hero, level, pos, itemlocs, didyoumove, inv, command):
     elif command == "PUT IN":
         put_in(hero, k, level, pos, itemlocs, didyoumove)
 
+def printskills(hero, inv, command):
+    lowernames = []
+    for i in range(len(inv)):
+        lowernames.append(inv[i].lower())
+    sys.stdout.write("\x1b[2J\x1b[H")
+    print("Type the name of the skill to take out or put in.") 
+    for i in range(len(inv)):
+        sys.stdout.write("{}: {}\n".format(i, inv[i]))
+    print("{}: Back\n".format(len(inv)))
+    o = False
+    while o == False:
+        k = input().lower()
+        if k == 'back':
+            return
+        elif k in lowernames:
+            o = True 
+        else:
+            continue
+    c = None
+    for i in range(len(inv)):
+        if lowernames[i] == k:
+            c = i
+    if command == "TAKE OUT":
+        take_skill(hero, c)
+    elif command == "PUT IN":
+        put_skill(hero, c)
+
 def dothis(hero, a, level, pos, itemlocs, moving, inv):
     o = False
     while o == False:
@@ -71,12 +112,16 @@ def unequip(hero, item):
     hero.equip = None
     print("Unequipped {}.".format(item.name))
     hero.calc_things()
+    if item.obj.boost != None:
+        hero.statminus(item)
 
 def equip(hero, item):
     if hero.equip == None and item.obj.school in hero.type.weapons:
         hero.equip = item
         print("Equipped {}.".format(item.name))
         hero.calc_things()
+        if item.obj.boost != None:
+            hero.statplus(item)
     else:
         print("You can't equip this!")
     time.sleep(1)
@@ -84,7 +129,9 @@ def equip(hero, item):
 def change(hero, takeout, takein):
     if takeout != None and takein.obj.school in hero.type.weapons:
         unequip(hero, takeout)
-    equip(hero, takein)
+        time.sleep(1)
+    if takeout != takein:
+        equip(hero, takein)
 
 def drop(hero, i, level, pos, itemlocs):
     index = [-1,0,1]
@@ -146,14 +193,38 @@ def convoy(hero, level, pos, items, moving):
                     print("Convoy empty.")
                     time.sleep(1)
                 else:
-                    printinv(hero, level, hero.position, items, moving, hero.convoy, "TAKE OUT")
+                    printskills(hero, level, hero.position, items, moving, hero.convoy, "TAKE OUT")
             elif a == '2':
                 if len(hero.convoy) >= hero.convoymax:
                     print("Convoy full.")
                 elif len(hero.bag) == 0:
                     print("Bag empty.")
                 else:
-                    printinv(hero, level, hero.position, items, moving, hero.bag, "PUT IN")    
+                    printskills(hero, level, hero.position, items, moving, hero.bag, "PUT IN")    
+            elif a == '3':
+                return
+
+def skillswap(hero, level, pos, items, moving):
+        a = '0'
+        while a != '3':
+            sys.stdout.write("\x1b[2J\x1b[H")
+            print("What would you like to do?")
+            print(" 1.Take out\n 2.Put in\n 3.Back")
+            a = read_key()
+            if a == '1':
+                if len(hero.skillset) == 5:
+                    print("Skills full.")
+                    time.sleep(1)
+                elif len(hero.inactiveskills) == 0:
+                    print("No skills to take out.")
+                    time.sleep(1)
+                else:
+                    printskills(hero, hero.inactiveskills, "TAKE OUT")
+            elif a == '2':
+                if len(hero.skillset) == 0:
+                    print("No skills to put in.")
+                else:
+                    printskills(hero, hero.skillset, "PUT IN")    
             elif a == '3':
                 return
  
@@ -199,7 +270,7 @@ def interact(hero, c, level, pos, itemlocs, moving):
                     moving = False
                 if used:
                     obj.dur -= 1
-                    update()
+                    update(hero)
             elif a == '3':
                 print(obj.obj.desc)
                 moving = False
