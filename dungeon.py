@@ -967,36 +967,28 @@ def make_level():
 
     #Insert NPC here
     npcpoint = None
+    neighbor = None
     npclist = checknpc(current)
     for i in range(len(npclist)):
         if npclist[i].job == "Shopkeeper":
-#           print("Making shop...")
             npcpoint = generate(level,'п')
             npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
         elif npclist[i].job == "Healer":
             if npcpoint != None:
-#               print("This will be next to shop.")
                 npcpoint = place(level,npcpoint,'*')
             else:
-#               print("There is no shop on this floor.")
                 npcpoint = generate(level,'*')
             npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
+
         elif npclist[i].job == "Blacksmith":
-            if npcpoint != None:
-#                print("This will be next to shop.")
-                npcpoint = place(level,npcpoint,'г')
-            else:
-#               print("There is no shop on this floor.")
-                npcpoint = generate(level,'г')
-            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
+            neighbor = generate(level,'г')
+            npcs.append(npcwrapper(npclist[i], neighbor.x, neighbor.y))
         elif npclist[i].job == "Alchemist":
-            if npcpoint != None:
-#                print("This will be next to shop.")
-                npcpoint = place(level,npcpoint,'8')
+            if neighbor != None:
+                neighbor = place(level,neighbor,'8')
             else:
-#               print("There is no shop on this floor.")
-                npcpoint = generate(level,'8')
-            npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
+                neighbor = generate(level,'8')
+            npcs.append(npcwrapper(npclist[i], neighbor.x, neighbor.y))
         else:
             npcpoint = generate(level,'!')
             npcs.append(npcwrapper(npclist[i], npcpoint.x, npcpoint.y))
@@ -1256,7 +1248,7 @@ if __name__ == '__main__':
                     if p:
                         if current >= 20:
                             which = 1
-                        m1 = MONSTERS[which][random.randrange(len(MONSTERS))]
+                        m1 = MONSTERS[which][random.randrange(len(MONSTERS[which]))]
                         #print("Making a {}".format(m1[0])) #debug
                         m = Monster(p,m1[0],m1[1],getbase(m1[0]),getgrowth(m1[0]))
                         m.lvlchange()

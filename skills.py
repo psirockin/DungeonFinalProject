@@ -196,14 +196,7 @@ def Despoil(hero):
 def Lifetaker(hero):
     sys.stdout.write("Lifetaker activated! ")
     hero.heal(int(hero.maxHP / 2))
-<<<<<<< HEAD
-=======
 
-def WeaponBreaker(hit, avoid):
-    hit -= 50
-    avoid -= 50
-    return True
->>>>>>> ac4213fb5d78c866679f6f46b5cdffb91ece5590
 '''
 public class Skills{
 
@@ -322,3 +315,4 @@ return true;
 
 public boolean Discipline(double proficiencyR){
 proficiencyR = proficienc
+'''
