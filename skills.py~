@@ -80,7 +80,7 @@ def battleskillcheck(hero, target, damage, nihil):
                         return Vengeance(hero, target, damage)
         return hero.attacking(target, damage, nihil)
 
-def postbattlecheck(hero, target):
+def postbattlecheck(hero, target, dmg):
     sk = setupskills(hero)
     if len(sk) != 0:
         for i in range(len(sk)): #skills can be simultaneously activated

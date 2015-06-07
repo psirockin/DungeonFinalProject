@@ -1142,8 +1142,8 @@ if __name__ == '__main__':
     
     init = []
     init.append(godmake("Vulnerary"))
-    init.append(godmake("Bronze Sword"))
-    init.append(godmake("Thunder"))
+    init.append(godmake("Silver Sword"))
+    init.append(godmake("Thoron"))
     init.append(godmake("Master Seal"))
     init.append(godmake("Second Seal"))
     for i in range(len(init)):

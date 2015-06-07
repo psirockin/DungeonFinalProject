@@ -98,10 +98,6 @@ def put_skill(hero, k):
         elif skill == "Resist +2":
             hero.stats[7] -= 2
             hero.max[7] -= 2
-        elif skill == "All Stats +2":
-                for i in range(1,8,1):
-                    hero.stats[i] -= 2
-                    hero.max[i] -= 2
         hero.setstats()
     if len(hero.skillset) != 0:
         printskills(hero, hero.skillset, "PUT IN")
