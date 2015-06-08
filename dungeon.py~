@@ -323,8 +323,8 @@ class hero:
         self.convoy = []
         self.equip = None
         self.weakness = setclass("Tactician").weakness
-        self.skillset = []
-        self.inactiveskills = []
+        self.skillset = ["Swordfaire","Tomefaire"]
+        self.inactiveskills = ["Magic +2","HP +5"]
 
     def expgain(self,exp):
         self.exp += exp
