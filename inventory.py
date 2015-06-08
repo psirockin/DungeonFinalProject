@@ -4,8 +4,10 @@ import math
 from item import weapon
 import tty
 import termios
+from skills import Weaponfaire
 
 statskills = ["HP +5","Strength +2","Magic +2","Skill +2","Speed +2","Luck +4","Defense +2","Resist +2"]
+faireskills = ["Swordfaire","Lancefaire","Axefaire","Bowfaire","Tomefaire"]
 
 def read_key():
     '''
@@ -36,7 +38,9 @@ def put_in(hero, k, level, pos, itemlocs, moving):
 def take_skill(hero, k):
     skill = hero.inactiveskills.pop(k)
     hero.skillset.append(skill)
-    if skill in statskills:
+    if skill in faireskills:
+        Weaponfaire(hero, skill, 5)
+    elif skill in statskills:
         if skill == "HP +5":
             print("Added 5 HP.")
             hero.stats[0] += 5
@@ -66,14 +70,15 @@ def take_skill(hero, k):
                 for i in range(1,8,1):
                     hero.stats[i] += 2
                     hero.max[i] += 2
-        hero.setstats()
+    hero.setstats()
     if len(hero.inactiveskills) != 0 and len(hero.skillset) < 5:
         printskills(hero, hero.inactiveskills, "TAKE OUT")
 
 def put_skill(hero, k):
-    skill = hero.skillset.pop(k)
-    hero.inactiveskills.append(skill)
-    if skill in statskills:
+    skill = hero.skillset[k]
+    if skill in faireskills:
+        Weaponfaire(hero, skill, -5)    
+    elif skill in statskills:
         if skill == "HP +5":
             hero.stats[0] -= 5
             hero.max[0] -= 5
@@ -102,7 +107,9 @@ def put_skill(hero, k):
                 for i in range(1,8,1):
                     hero.stats[i] -= 2
                     hero.max[i] -= 2
-        hero.setstats()
+    hero.skillset.pop(k)
+    hero.inactiveskills.append(skill)
+    hero.setstats()
     if len(hero.skillset) != 0:
         printskills(hero, hero.skillset, "PUT IN")
 
@@ -172,6 +179,11 @@ def dothis(hero, a, level, pos, itemlocs, moving, inv):
     interact(hero, select, level, pos, itemlocs, moving)
 
 def unequip(hero, item):
+    n = item.obj.school
+    if n == "Magic":
+        n = "Tome"
+    n += "faire"
+    Weaponfaire(hero, n, -5)
     hero.equip = None
     print("Unequipped {}.".format(item.name))
     hero.calc_things()
@@ -182,6 +194,11 @@ def equip(hero, item):
     if hero.equip == None and item.obj.school in hero.type.weapons:
         hero.equip = item
         print("Equipped {}.".format(item.name))
+        n = item.obj.school
+        if n == "Magic":
+            n = "Tome"
+        n += "faire"
+        Weaponfaire(hero, n, 5)
         hero.calc_things()
         if item.obj.boost != None:
             print(item.obj.boost)
@@ -301,7 +318,7 @@ def interact(hero, c, level, pos, itemlocs, moving):
             print(" 1.Un/equip\n 2.Use\n 3.Info\n 4.Drop \n 5.Sell\n 6.Back")
             a = read_key()
             if a == '1':
-                if isinstance(obj.obj, weapon) == False:
+                if not isinstance(obj.obj, weapon):
                     print("You can't equip that!")
                     time.sleep(2)
                 else:
@@ -337,6 +354,8 @@ def interact(hero, c, level, pos, itemlocs, moving):
                     update(hero)
             elif a == '3':
                 print(obj.obj.desc)
+                if isinstance(obj.obj, weapon):
+                    print('Might: {} Accuracy: {}% Crit Rate: {}% Effective: {} Range: {}'.format(obj.attack, obj.accuracy, obj.critical, obj.obj.weakness, obj.obj.range))
                 moving = False
                 time.sleep(2)
             elif a == '4':

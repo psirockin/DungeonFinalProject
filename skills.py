@@ -2,6 +2,8 @@ import random
 import sys
 # If you do not have a weapon, you do not get to use any attack  Sorry.
 
+pavise = ["Lance","Sword","Axe"]
+aegis = ["Bow","Magic"]
 notskill = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist","Brave","Drain"]
 faireskills = ["Swordfaire","Lancefaire","Axefaire","Bowfaire","Tomefaire"]
 breakerskills = ["Swordbreaker","Lancebreaker","Axebreaker","Bowbreaker","Tomebreaker"]
@@ -21,6 +23,22 @@ def setupskills(hero):
                 if hero.equip.obj.effect not in notskill:
                     allskills.append(hero.equip.obj.effect)
     return allskills
+
+def dmgmod(hero, target, dmg):
+    sk = setupskills(target)
+    act = (target.skill >= random.randrange(100))
+    half = False
+    if act:
+        c = hero.equip.obj.school
+        if "Pavise" in sk and c in pavise:
+            print("Pavise activated!")
+            half = True
+        elif "Aegis" in sk and c in aegis:
+            print("Aegis activated!")
+            half = True
+    if half:
+        dmg /= 2 
+    return dmg
 
 def statskillcheck(hero):
     sk = setupskills(hero)
@@ -91,6 +109,73 @@ def postbattlecheck(hero, target):
                 if skill == "Lifetaker":
                     Lifetaker(hero)
 
+def Weaponfaire(hero, skill, amount):
+    k = hero.equip.obj.school
+    sk = setupskills(hero)
+    check = False
+    faire = False
+    if skill in hero.skillset:
+        check = True
+    if check: #Will activate upon equipping and unequipping
+#        print("Now checking...")
+        if k == "Sword" and "Swordfaire" in sk:
+            print("Swordfaire activated!")
+            faire = True
+        elif k == "Lance" and "Lancefaire" in sk:
+            print("Lancefaire activated!")
+            faire = True
+        elif k == "Axe" and "Axefaire" in sk:
+            print("Axefaire activated!")
+            faire = True
+        elif k == "Bow" and "Bowfaire" in sk:
+            print("Bowfaire activated!")
+            faire = True
+        elif k == "Magic" and "Tomefaire" in sk:
+            print("Tomefaire activated!")
+            faire = True
+    if faire and hero.equip.obj.type == "W":
+        hero.stats[1] += amount
+        hero.max[1] += amount
+    else:
+        hero.stats[2] += amount
+        hero.max[2] += amount
+    hero.setstats()
+
+'''
+def Weaponfaire(hero, str, mag, sk):
+	wep = hero.equip.obj.school
+	type = hero.equip.obj.type
+	s = st
+	m = mag
+	faire = False
+	if "Swordfaire" in sk and wep == "Sword":
+		faire = True
+	elif "Lancefaire" in sk and wep == "Lance":
+		faire = True
+	elif "Axefaire" in sk and wep == "Axe":
+		faire = True
+	elif "Bowfaire" in sk and wep == "Bow":
+		faire = True
+	if faire and type == "W":
+		s+=5
+	#This is for the following weapons: Levin Sword, Shock Stick, Bolt Axe
+	elif faire and type == "M":
+		m+= 5
+		return m
+	return s
+
+
+def Tomefaire(hero, mag, sk):
+	wep = hero.equip.obj.school
+	m = mag
+	faire = False
+	if "Tomefaire" in sk and wep == "Magic":
+		faire = True
+	if faire:
+		m += 5
+	return m
+'''
+
 def hitmidbattlecheck(hero, target, hit): #good guys
     sk = setupskills(hero)
     h = hit
@@ -106,18 +191,30 @@ def hitmidbattlecheck(hero, target, hit): #good guys
 
 def avomidbattlecheck(hero, target, avo): #bad guys
     sk = setupskills(target)
+    sk2 = setupskills(hero)
     a = avo
     if hero.equip != None:
         a = secondbreakercheck(avo, hero, target, sk)
     if len(sk) != 0:
-        for i in range(len(sk)):
-            skill = sk[i]
-            if skill == "Patience":
-                print("Patience activated!")
-                a += 10
-            if skill == "Miracle":
-                a += Miracle(hero)
-    return a         
+        if "Patience" in sk:
+            print("Patience activated!")
+            a += 10
+        if "Miracle" in sk:
+            a += Miracle(hero)
+    if len(sk2) != 0:
+        if "Hex" in sk2:
+            print("Hex activated!")
+            a -= 15
+        if "Anathema" in sk2:
+            print("Anathema activated!")
+            a -= 10
+    return a, c
+
+def Anathema(hero): #separate anathema skill to modify crit
+    sk = setupskills(hero)
+    if "Anathema" in sk:
+        return 10
+    return 0
 
 def breakercheck(hit, hero, target, sk):
     h = hit
@@ -166,17 +263,20 @@ def secondbreakercheck(avo, hero, target, sk):
         a += 50
     return a
 
+def Wrath(hero):
+    sk = setupskills(hero)
+    if len(sk) != 0:
+        if "Wrath" in sk and hero.HP <= int(hero.HP / 2):
+            print("Wrath activated!")
+            return 20
+    return 0
 
 def Armsthrift(hero):
     sk = setupskills(hero)
     if len(sk) != 0:
-        for i in range(len(sk)):
-            skill = sk[i]
-            if skill == "Armsthrift":
-                activate = random.randrange(100) <= hero.luck * 2
-                if activate:
-                    print("Armsthrift activated!")
-                    return True
+        if "Armsthrift" in sk and random.randrange(100) <= hero.luck * 2:
+            print("Armsthrift activated!")
+            return True
     return False
 
 def Miracle(hero):

@@ -8,7 +8,7 @@ unit = collections.namedtuple('unit', 'name weakness weapons base classes basest
 data = [
 [
 unit("Tactician",[None],["Sword", "Magic"],[40,15,15,15,15,0,10,10],["Grandmaster"],[16,4,3,5,5,0,5,3],[60,25,25,25,25,30,25,25],None,"All Stats +2"),
-unit("Cavalier",["Horse"],["Sword", "Lance"],[45,20,0,20,20,0,10,5],["Great Knight","Paladin"],[18,6,0,5,6,0,7,0],[60,26,20,25,25,30,26,26],None,None),
+unit("Cavalier",["Horse"],["Sword", "Lance"],[45,20,0,20,20,0,10,5],["Great Knight","Paladin"],[18,6,0,5,6,0,7,0],[60,26,20,25,25,30,26,26],"Miracle",None),
 unit("Mercenary",[None],["Sword"], [45,20,0,25,20,0,10,5],["Hero","Bow Knight"],[18,5,0,8,7,0,5,0],[60,26,20,28,26,30,25,23],"Armsthrift","Patience"),
 unit("Myrmidon",[None],["Sword"], [40,20,0,25,25,0,5,5],["Swordmaster","Assassin"],[16,4,1,9,10,0,4,1],[60,24,22,27,28,30,22,24],"Avoid +10",None),
 unit("Archer",[None],["Bow"],[45,15,0,30,15,0,10,5],["Sniper","Bow Knight"],[16,5,0,8,6,0,5,0],[60,26,20,29,25,30,25,21],"Skill +2","Prescience"),
@@ -19,7 +19,7 @@ unit("Knight",["Armor"],["Lance"],[50,25,0,15,10,0,15,5],["General","Great Knigh
 unit("Dark Mage",[None],["Magic","Dark Magic"],[50,5,15,15,15,0,10,10],["Sorcerer","Dark Knight"],[18,1,3,2,3,0,4,4],[60,20,27,25,25,30,25,27],"Hex","Anathema"),
 unit("Fighter",[None],["Axe"],[45,25,0,20,15,0,10,5],["Hero","Warrior"],[20,8,0,5,5,0,4,0],[60,29,20,26,25,30,25,23],"HP +5","Zeal"),
 unit("Barbarian",[None],["Axe"],[50,25,0,15,20,0,5,5],["Berserker","Warrior"],[22,8,0,3,8,0,3,0],[60,29,20,26,25,30,25,23],"Despoil","Gamble"),
-unit("Pegasus Knight",["Wing","Horse"],["Lance"],[40,15,5,25,25,0,5,10],["Falcon Knight","Dark Flier"],[16,4,2,7,8,0,4,6],[60,24,23,28,27,30,22,25],"Speed +2","Relief")
+unit("Pegasus Knight",["Wing","Horse"],["Lance"],[40,15,5,25,25,0,5,10],["Falcon Knight","Dark Flier"],[16,4,2,7,8,0,4,6],[60,24,23,28,27,30,22,25],"Speed +2","Renewal")
 ]
 ,
 [
@@ -31,7 +31,7 @@ unit("Swordmaster",[None],["Sword"],[40,20,0,25,25,0,5,10],None,[20,7,2,11,13,0,
 unit("Sniper",[None],["Bow"],[45,15,0,30,15,0,15,5],None,[20,7,1,12,9,0,10,3],[80,42,30,46,42,45,40,36],"Hit Rate +20","Bowfaire"),
 unit("Bow Knight",["Horse"],["Bow","Sword"],[50,20,0,25,20,0,5,5],None,[24,8,0,10,10,0,6,2],[80,40,30,43,41,45,35,30],None,"Bowbreaker"),
 unit("Assassin",[None],["Sword","Bow"],[40,20,0,30,25,0,5,5],None,[21,8,0,13,12,0,5,1],[80,40,30,48,46,45,31,30],"Lethality",None),
-unit("Trickster",[None],["Sword"],[35,10,15,25,20,0,5,10],None,[19,4,4,10,11,0,3,5],[80,35,38,45,43,45,30,40],"Lucky Seven","Bargain"), 
+unit("Trickster",[None],["Sword"],[35,10,15,25,20,0,5,10],None,[19,4,4,10,11,0,3,5],[80,35,38,45,43,45,30,40],None,"Bargain"), 
 unit("Sage",[None],["Magic"],[35,0,20,20,20,0,5,10],None,[20,1,7,5,7,0,4,5],[80,30,46,43,42,45,31,40],None,"Tomefaire"),
 unit("Dark Knight",[None],["Magic","Sword"],[50,15,15,15,15,0,10,5],None,[25,4,5,6,5,0,9,5],[80,38,41,40,40,45,42,38],None,"Lifetaker"),
 unit("Sorcerer",[None],["Magic","Dark Magic"],[45,0,20,15,15,0,10,10],None,[23,2,6,4,4,0,7,7],[80,30,44,38,40,45,41,44],"Vengeance","Tomebreaker"),

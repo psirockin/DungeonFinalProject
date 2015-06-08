@@ -57,6 +57,7 @@ catalog = [
     weapon("Superior Axe","Strong against axes.","Axe",15,60,0,["Axebreaker"],None,[None],2150,"W",1,10,[None],[None],[]),
     weapon("Orsin's Hatchet","Orsin's ranged axe. WHY IS IT NERFED?","Axe",4,85,5,None,[None],None,960,"W",2,20,[None],[None],[]),
     weapon("Hector's Axe","Wolf Beil? Str and Def +2.","Axe",15,75,15,["Strength","Defense"],2,[None],2010,"W",1,15,[None],[None],[]),
+    weapon("Titania's Axe","A Greil mercenary's axe. Grants +10 Avo when under attack.","Axe",12,80,10,["Patience"],None,[None],1320,"W",1,20,[None],[None],[]),
     weapon("Volant Axe","Ranged axe. Strong against wings.","Axe",8,55,0,None,None,["Wing"],1510,"W",2,10,[None],[None],[]),
     weapon("Slack Bow","lol","Bow",1,90,0,None,None,["Wing"],100,"W",2,20,[None],[None],[]),
     weapon("Glass Bow","Powerful but breaks easily.","Bow",13,75,0,None,None,["Wing"],600,"W",2,3,[None],[None],[]),

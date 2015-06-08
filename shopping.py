@@ -108,7 +108,12 @@ def buy(hero,npc,level,addlist):
                 print(shopquotes[npc.i.level][6])
             else:
                 print(buildquote(shopquotes[npc.i.level][4],[canbuy[select].name]))
-                hero.money -= canbuy[select].cost
+                amt = canbuy[select].cost
+                if "Bargain" in hero.skillset:
+                    print("I'll give you a discount!")
+                    amt /= 2
+                    amt = int(amt)
+                hero.money -= amt
                 hero.bag.append(itemwrapper(canbuy[select], None, None, None))
         time.sleep(1)
     return

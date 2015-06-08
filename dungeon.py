@@ -2,7 +2,7 @@
  
 from itemsys import godmake, generate_item
 import help
-from inventory import convoy, printinv, update, enemydrop, unequip, equip, skillswap
+from inventory import convoy, printinv, update, enemydrop, unequip, equip, skillswap, faireskills
 import collections
 import copy
 import random
@@ -13,7 +13,7 @@ import time
 from item import catalog, itemwrapper, printformula, weapon
 import math
 import skills
-from skills import battleskillcheck, postbattlecheck, Armsthrift, Counter, nihilcheck, statskillcheck
+from skills import battleskillcheck, postbattlecheck, Armsthrift, Counter, nihilcheck, statskillcheck, dmgmod, Weaponfaire, internalskills, Wrath
 from units import data, setclass, ispromote, getbase, getmax, getgrowth, paramcheck
 from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 
@@ -70,10 +70,34 @@ MONSTERS = [
     ['Fighter', 'f'],
     ['Mercenary', 'm'],
     ['Cavalier', 'c',],
-    ['Myrmidon', 't',]
+    ['Myrmidon', 't',],
+    ['Thief', 'n'],
+    ['Mage', 'y'],
+    ['Pegasus Knight', 'p'],
+    ['Wyvern Rider', 'w'],
+    ['Knight', 'k'],
+    ['Dark Mage', 'd'],
+    ['Barbarian', 'b']
 ],
 [
-    
+    ['Sniper', 'A'],
+    ['Bow Knight', 'X'],
+    ['Warrior', 'F'],
+    ['Hero', 'H'],
+    ['Paladin', 'C'],
+    ['Great Knight', 'G'],
+    ['Swordmaster', 'S'],
+    ['Assassin', 'T'],
+    ['Trickster', 'Q'],
+    ['Sage', 'Y'],
+    ['Dark Knight', 'R'],
+    ['Falcon Knight', 'P'],
+    ['Dark Flier', 'J'],
+    ['Wyvern Lord', 'W'],
+    ['Griffon Knight', 'U'],
+    ['General', 'K'],
+    ['Sorcerer', 'S'],
+    ['Berserker', 'B']
 ]
 ]
  
@@ -215,7 +239,7 @@ class Monster:
         ht = skills.hitmidbattlecheck(self, target, ht)
         avo = skills.avomidbattlecheck(self, target, avo)
         hit_rate = ht - avo
-        crit = self.crit - target.luck
+        crit = self.crit - target.luck + Wrath(self) + skills.Anathema(self)
 #        print("{}'s hit rate before: {}%, crit rate: {}%.".format(self.name,self.hit - target.avoid,crit))
         print("{}'s hit rate: {}%, crit rate: {}%.".format(self.name,hit_rate,crit))
         if hit_rate < random.randrange(100):
@@ -238,7 +262,7 @@ class Monster:
         ht = skills.hitmidbattlecheck(self, target, ht)
         avo = skills.avomidbattlecheck(self, target, avo)
         hit_rate = ht - avo
-        crit = self.crit - target.luck
+        crit = self.crit - target.luck + Wrath(self) + skills.Anathema(self)
 #        print("{}'s hit rate before: {}%, crit rate: {}%.".format(self.name,self.hit - target.avoid,crit))
         print("{}'s hit rate: {}%, crit rate: {}%.".format(self.name,hit_rate,crit))
         if hit_rate < random.randrange(100):
@@ -254,6 +278,7 @@ class Monster:
             if crit > random.randrange(100) and not nihil:
                 sys.stdout.write("CRITICAL! " )
                 damage *= 3
+            damage = dmgmod(self, target, damage)
             target.HP -= damage
             if not Armsthrift(self):
                 self.equip.dur -= 1
@@ -298,7 +323,7 @@ class hero:
         self.convoy = []
         self.equip = None
         self.weakness = setclass("Tactician").weakness
-        self.skillset = ["Counter"]
+        self.skillset = ["Swordfaire","Tomefaire"]
         self.inactiveskills = ["Magic +2","HP +5"]
 
     def expgain(self,exp):
@@ -316,6 +341,7 @@ class hero:
                 self.learn(self.type.skill1)
             if self.promoted == 1 and self.displvl == 15:
                 self.learn(self.type.skill2)
+                    
 
     def maxmod(self, promo):
         for i in range(len(self.max)):
@@ -575,6 +601,10 @@ class hero:
                 self.inactiveskills.append(skill)
             else:
                 self.skillset.append(skill)
+                if skill in faireskills:
+                    Weaponfaire(self,skill,5)
+                elif skill in internalskills:
+                    statskillcheck(hero)
 
     def statplus(self, item):
         amount = item.obj.boost
@@ -690,7 +720,7 @@ class hero:
         ht = skills.hitmidbattlecheck(self, target, ht)
         avo = skills.avomidbattlecheck(self, target, avo)
         hit_rate = ht - avo
-        crit = self.crit - target.luck
+        crit = self.crit - target.luck + Wrath(self) + skills.Anathema(self)
 #        print("{}'s hit rate before: {}%, crit rate: {}%.".format(self.name,self.hit - target.avoid,crit))
         print("{}'s hit rate: {}%, crit rate: {}%.".format(self.name,hit_rate,crit))
         if hit_rate < random.randrange(100):
@@ -713,7 +743,7 @@ class hero:
         ht = skills.hitmidbattlecheck(self, target, ht)
         avo = skills.avomidbattlecheck(self, target, avo)
         hit_rate = ht - avo
-        crit = self.crit - target.luck
+        crit = self.crit - target.luck + Wrath(self) + skills.Anathema(self)
 #        print("{}'s hit rate before: {}%, crit rate: {}%.".format(self.name,self.hit - target.avoid,crit))
         print("{}'s hit rate: {}%, crit rate: {}%.".format(self.name,hit_rate,crit))
         if hit_rate < random.randrange(100):
@@ -729,6 +759,7 @@ class hero:
             if crit > random.randrange(100) and not nihil:
                 sys.stdout.write("CRITICAL! " )
                 damage *= 3
+            damage = dmgmod(self, target, damage)
             target.HP -= damage
             if not Armsthrift(self):
                 self.equip.dur -= 1
@@ -1168,7 +1199,9 @@ if __name__ == '__main__':
         # level, and then swap back
         old, level[char.position.x][char.position.y] = level[char.position.x][char.position.y], 'Д' #changed @ with Д
         print_level(level)
-        level[char.position.x][char.position.y] = old               
+        level[char.position.x][char.position.y] = old
+        if "Renewal" in char.skillset and char.HP < char.maxHP:
+            char.heal(int(char.maxHP * .1))                 
         if char.displvl == 20:
             sys.stdout.write('{} HP:{}/{} Class:{} Lvl:{} EXP:MAX Money:{}G\n'.format(char.name,char.HP,char.maxHP,char.type.name,char.displvl, char.money))
         else:
