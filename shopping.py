@@ -1,24 +1,13 @@
 import sys
 import time
 import inventory
+from inventory import _Getch
 import random
 from item import catalog, itemwrapper
 import tty
 import termios
 
-def read_key():
-    '''
-    Read a single key from stdin
-    '''
-    try:
-        fd = sys.stdin.fileno()
-        tty_settings = termios.tcgetattr(fd)
-        tty.setraw(fd)
- 
-        key = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, tty_settings)
-    return key
+r = _Getch()
 
 def shop(hero, npc, level):       
     i = 0
@@ -27,7 +16,7 @@ def shop(hero, npc, level):
         print('{} [Y/N]'.format(shopquotes[npc.i.level][7]))
         choose = 'Bleh'
         while choose != 'y' and choose != 'n':
-            choose = read_key()
+            choose = r.read_key()
             choose.lower()
             if choose != 'y' and choose != 'n':
                 print("Well?")
@@ -40,7 +29,7 @@ def shop(hero, npc, level):
         print("{}: {}\n".format(npc.i.name,npc.i.welcome)) 
         print(" 1. Buy\n 2. Sell\n 3. Leave")
         print(shopquotes[npc.i.level][0])
-        i = read_key()
+        i = r.read_key()
         if i == '1':
             buy(hero,npc,level,addlist)
         elif i == '2':
@@ -83,7 +72,7 @@ def buy(hero,npc,level,addlist):
         reasonable = False
         while reasonable == False:
             try:
-                select = int(read_key())
+                select = int(r.read_key())
                 if select == len(canbuy):
                     return
                 if select >= 0 and select < len(canbuy):
@@ -96,7 +85,7 @@ def buy(hero,npc,level,addlist):
         print('{} [Y/N]'.format(buildquote(shopquotes[npc.i.level][1], [canbuy[select].name, cost])))
         choose = 'Bleh'
         while choose != 'y' and choose != 'n':
-            choose = read_key()
+            choose = r.read_key()
             choose.lower()
             if choose != 'y' and choose != 'n':
                 print("Well?")
@@ -134,7 +123,7 @@ def sell(hero,npc):
         reasonable = False
         while reasonable == False:
             try:
-                select = int(read_key())
+                select = int(r.read_key())
                 if select == len(hero.bag):
                     return
                 if select >= 0 and select <= len(hero.bag):
@@ -148,7 +137,7 @@ def sell(hero,npc):
         print('{} [Y/N]'.format(buildquote(shopquotes[npc.i.level][3], [printsum])))
         choose = 'Bleh'
         while choose != 'y' and choose != 'n':
-            choose = read_key()
+            choose = r.read_key()
             choose.lower()
             if choose != 'y' and choose != 'n':
                 print("Well?")

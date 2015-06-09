@@ -1,6 +1,6 @@
 import random
 import sys
-# If you do not have a weapon, you do not get to use any attack  Sorry.
+# If you do not have a weapon, you do not get to use any attack. Sorry.
 
 pavise = ["Lance","Sword","Axe"]
 aegis = ["Bow","Magic"]
@@ -38,6 +38,7 @@ def dmgmod(hero, target, dmg):
             half = True
     if half:
         dmg /= 2 
+        dmg = int(dmg) 
     return dmg
 
 def statskillcheck(hero):
@@ -75,46 +76,60 @@ def statskillcheck(hero):
                     hero.max[i] += 2
     hero.setstats()
 
-def battleskillcheck(hero, target, damage, nihil):
+def battleskillcheck(hero, target, damage, nihil, skl, spd):
         sk = setupskills(hero)
         active = random.randrange(100)
         if len(sk) != 0 and not nihil:
             for i in range(len(sk)):
                 if sk[i]:
                     skill = sk[i]
-                    if skill == "Lethality" and int(hero.skill/4) >= active: #Arranging order by priority, must be hard-coded
+                    if skill == "Lethality" and int(skl/4) >= active: #Arranging order by priority, must be hard-coded
                         return Lethality(hero, target)
-                    elif skill == "Aether" and int(hero.skill/2) >= active:
+                    elif skill == "Aether" and int(skl/2) >= active:
                         return Aether(hero, target, damage)
-                    elif skill == "Astra" and int(hero.skill/2) >= active:
+                    elif skill == "Astra" and int(skl/2) >= active:
                         return Astra(hero, target, damage)
-                    elif skill == "Sol" and hero.skill >= active:
+                    elif skill == "Sol" and skl >= active:
                         return Sol(hero, target, damage)
-                    elif skill == "Luna" and hero.skill >= active:
+                    elif skill == "Luna" and skl >= active:
                         return Luna(hero, target, damage)
-                    elif skill == "Ignis" and hero.skill >= active:
+                    elif skill == "Ignis" and skl >= active:
                         return Ignis(hero, target, damage)
-                    elif skill == "Vengeance" and hero.skill * 2 >= active:
+                    elif skill == "Vengeance" and skl * 2 >= active:
                         return Vengeance(hero, target, damage)
-        return hero.attacking(target, damage, nihil)
+        return hero.attacking(target, damage, nihil, spd)
 
 def postbattlecheck(hero, target):
     sk = setupskills(hero)
-    if len(sk) != 0:
-        for i in range(len(sk)): #skills can be simultaneously activated
-            skill = sk[i]
-            if target.isdead():
-                if skill == "Despoil" and hero.luck >= random.randrange(100):
-                    Despoil(hero)            
-                if skill == "Lifetaker":
-                    Lifetaker(hero)
+    if len(sk) != 0: 
+        if "Disarm" in sk and (hero.skill / 2) >= random.randrange(100):
+            if target.equip != None:
+                print("Disarm activated!")
+            target.equip = None
+        elif "Corrosion" in sk and (hero.skill / 2) >= random.randrange(100):
+            Corrosion(hero, target)
+        if target.isdead(): #skills can be simultaneously activated
+            if "Despoil" in sk and hero.luck >= random.randrange(100):
+                Despoil(hero)            
+            if "Lifetaker" in sk:
+                Lifetaker(hero)
+
+def Corrosion(hero, target):
+    print("Corrosion activated!")
+    lvl = hero.displvl
+    if hero.promoted == 1:
+        lvl += 20
+    target.equip.dur -= int(lvl / 4)
+    for a in range(len(target.bag) - 1, -1, -1):
+        if hero.target[a].dur <= 0:
+            hero.target.pop(a)
 
 def Weaponfaire(hero, skill, amount):
     k = hero.equip.obj.school
     sk = setupskills(hero)
     check = False
     faire = False
-    if skill in hero.skillset:
+    if skill in sk:
         check = True
     if check: #Will activate upon equipping and unequipping
 #        print("Now checking...")
@@ -136,7 +151,7 @@ def Weaponfaire(hero, skill, amount):
     if faire and hero.equip.obj.type == "W":
         hero.stats[1] += amount
         hero.max[1] += amount
-    else:
+    elif faire and hero.equip.obj.type == "M":
         hero.stats[2] += amount
         hero.max[2] += amount
     hero.setstats()
@@ -182,11 +197,12 @@ def hitmidbattlecheck(hero, target, hit): #good guys
     if target.equip != None:
         h = breakercheck(hit, hero, target, sk)
     if len(sk) != 0:
-        for i in range(len(sk)):
-            skill = sk[i]
-            if skill == "Prescience":
-                print("Prescience activated!")
-                h += 10
+        if "Prescience" in sk:
+            print("Prescience activated!")
+            h += 10
+        if "Underdog" in sk:
+            print("Underdog activated!")
+            h += 15
     return h
 
 def avomidbattlecheck(hero, target, avo): #bad guys
@@ -201,6 +217,9 @@ def avomidbattlecheck(hero, target, avo): #bad guys
             a += 10
         if "Miracle" in sk:
             a += Miracle(hero)
+        if "Underdog" in sk:
+            print("Underdog activated!")
+            a += 15
     if len(sk2) != 0:
         if "Hex" in sk2:
             print("Hex activated!")
@@ -208,7 +227,26 @@ def avomidbattlecheck(hero, target, avo): #bad guys
         if "Anathema" in sk2:
             print("Anathema activated!")
             a -= 10
-    return a, c
+    return a
+
+def startcheck(hero):
+    sk = setupskills(hero)
+    if "Renewal" in sk and hero.HP < hero.maxHP:
+        hero.heal(int(hero.maxHP * .1))
+    if "Imbue" in sk and hero.HP < hero.maxHP and "Magic" not in hero.weapons:
+        hero.heal(int(hero.magic)) 
+
+def Adept(hero, spd):
+    if "Adept" in setupskills(hero) and spd >= random.randrange(100):
+        print("Adept activated!")
+        return True
+    return False
+
+def Resolve(hero):
+    if "Resolve" in setupskills(hero) and hero.HP <= int(hero.maxHP * .5):
+        print("Resolve activated!")
+        return True
+    return False
 
 def Anathema(hero): #separate anathema skill to modify crit
     sk = setupskills(hero)

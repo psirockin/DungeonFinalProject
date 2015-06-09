@@ -6,22 +6,48 @@ import tty
 import termios
 from skills import Weaponfaire
 
-statskills = ["HP +5","Strength +2","Magic +2","Skill +2","Speed +2","Luck +4","Defense +2","Resist +2"]
+statskills = ["HP +5","Strength +2","Magic +2","Skill +2","Speed +2","Luck +4","Defense +2","Resist +2","Resist +10"]
 faireskills = ["Swordfaire","Lancefaire","Axefaire","Bowfaire","Tomefaire"]
 
-def read_key():
-    '''
-    Read a single key from stdin
-    '''
-    try:
+class _Getch:
+    """Gets a single character from standard input.  Does not echo to the
+screen."""
+    def __init__(self):
+        try:
+            self.impl = _GetchWindows()
+        except ImportError:
+            self.impl = _GetchUnix()
+
+    def read_key(self): return self.impl()
+
+
+class _GetchUnix:
+    def __init__(self):
+        import tty, sys
+
+    def __call__(self):
+        import sys, tty, termios
         fd = sys.stdin.fileno()
-        tty_settings = termios.tcgetattr(fd)
-        tty.setraw(fd)
- 
-        key = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, tty_settings)
-    return key
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
+
+class _GetchWindows:
+    def __init__(self):
+        import msvcrt
+
+    def __call__(self):
+        import msvcrt
+        return msvcrt.getch()
+#################################################################
+
+r = _Getch()
+
 
 # Mitsunari-san's inventory
 
@@ -66,6 +92,9 @@ def take_skill(hero, k):
         elif skill == "Resist +2":
             hero.stats[7] += 2
             hero.max[7] += 2
+        elif skill == "Resist +10":
+            hero.stats[7] += 10
+            hero.max[7] += 10
         elif skill == "All Stats +2":
                 for i in range(1,8,1):
                     hero.stats[i] += 2
@@ -77,7 +106,7 @@ def take_skill(hero, k):
 def put_skill(hero, k):
     skill = hero.skillset[k]
     if skill in faireskills:
-        Weaponfaire(hero, skill, -5)    
+        Weaponfaire(hero, skill, -5) 
     elif skill in statskills:
         if skill == "HP +5":
             hero.stats[0] -= 5
@@ -103,6 +132,9 @@ def put_skill(hero, k):
         elif skill == "Resist +2":
             hero.stats[7] -= 2
             hero.max[7] -= 2
+        elif skill == "Resist +10":
+            hero.stats[7] -= 10
+            hero.max[7] -= 10
         elif skill == "All Stats +2":
                 for i in range(1,8,1):
                     hero.stats[i] -= 2
@@ -123,7 +155,7 @@ def printinv(hero, level, pos, itemlocs, didyoumove, inv, command):
     o = False
     while o == False:
         try:
-            k = int(read_key())
+            k = int(r.read_key())
             if k == len(inv):
                 return
             elif k >= 0 and k < len(inv):
@@ -265,7 +297,7 @@ def convoy(hero, level, pos, items, moving):
             sys.stdout.write("\x1b[2J\x1b[H")
             print("What would you like to do?")
             print(" 1.Take out\n 2.Put in\n 3.Back")
-            a = read_key()
+            a = r.read_key()
             if a == '1':
                 if len(hero.bag) >= hero.capacity:
                     print("Bag full.")
@@ -291,7 +323,7 @@ def skillswap(hero, level, pos, items, moving):
             sys.stdout.write("\x1b[2J\x1b[H")
             print("What would you like to do?")
             print(" 1.Take out\n 2.Put in\n 3.Back")
-            a = read_key()
+            a = r.read_key()
             if a == '1':
                 if len(hero.skillset) == 5:
                     print("Skills full.")
@@ -316,7 +348,7 @@ def interact(hero, c, level, pos, itemlocs, moving):
             sys.stdout.write("\x1b[2J\x1b[H")
             print("What would you like to do with {}? Input number.".format(obj.name))
             print(" 1.Un/equip\n 2.Use\n 3.Info\n 4.Drop \n 5.Sell\n 6.Back")
-            a = read_key()
+            a = r.read_key()
             if a == '1':
                 if not isinstance(obj.obj, weapon):
                     print("You can't equip that!")

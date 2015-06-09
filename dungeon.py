@@ -2,18 +2,16 @@
  
 from itemsys import godmake, generate_item
 import help
-from inventory import convoy, printinv, update, enemydrop, unequip, equip, skillswap, faireskills
+from inventory import convoy, printinv, update, enemydrop, unequip, equip, skillswap, faireskills, _Getch
 import collections
 import copy
 import random
 import sys
-import termios
-import tty
 import time
 from item import catalog, itemwrapper, printformula, weapon
 import math
 import skills
-from skills import battleskillcheck, postbattlecheck, Armsthrift, Counter, nihilcheck, statskillcheck, dmgmod, Weaponfaire, internalskills, Wrath
+from skills import battleskillcheck, postbattlecheck, Armsthrift, Counter, nihilcheck, statskillcheck, dmgmod, Weaponfaire, internalskills, Wrath, setupskills
 from units import data, setclass, ispromote, getbase, getmax, getgrowth, paramcheck
 from npc import npcbase, loadnpc, checknpc, npcindex, npcwrapper, dothings
 
@@ -115,9 +113,11 @@ class Monster:
         self.max = getmax(self.name)
         self.lvl = current + 1
         self.growth = growths
+        self.promoted = 0
         self.equip = None
         self.old = '.' # monsters always spawn on a '.'
         self.skillset = []
+        self.bag = []
         self.setstats()
         self.bonuses()
         self.setequip()        
@@ -132,7 +132,9 @@ class Monster:
 #       print("There are {} possible weapons for me to equip.".format(len(possible)))
         if len(possible) != 0:
             name = possible[random.randrange(len(possible))].name
-            self.equip = godmake(name)
+            i = godmake(name)
+            self.bag.append(i)
+            self.equip = i
 #           print("I have a {}.".format(self.equip.name))
             self.calc_things()
 
@@ -213,17 +215,25 @@ class Monster:
 
     def howtoattack(self,target):
         n = nihilcheck(self,target)
+        r = skills.Resolve(self)
         if self.equip == None:
             return self.struggle(target,n)
         else:
             dmg = self.equip.attack
             if self.equip.obj.type == "W":
-                dmg += self.strength
+                st = self.strength
+                if r:
+                    st *= 1.5
+                    st = int(st)
+                dmg += st
             else:
                 dmg += self.magic
             if self.equip.obj.weakness != [None] and self.weaknesses(target) and not n:
                 dmg *= 3
-            return battleskillcheck(self, target, dmg, n)
+            if r:
+                return battleskillcheck(self, target, dmg, n, int(self.skill * 1.5), int(self.speed * 1.5))
+            else:
+                return battleskillcheck(self, target, dmg, n, self.skill, self.speed)
 
     def weaknesses(self,target):
         for i in range(len(self.equip.obj.weakness)):
@@ -255,7 +265,7 @@ class Monster:
         Counter(self, target, damage)
         return damage
 
-    def attacking(self, target, damage, nihil):
+    def attacking(self, target, damage, nihil, speed):
         miss = False
         ht = self.hit
         avo = target.avoid
@@ -284,7 +294,9 @@ class Monster:
                 self.equip.dur -= 1
             Counter(self, target, damage)
             if self.equip.obj.effect == "Drain": 
-                self.heal(int(damage * .5))  
+                self.heal(int(damage * .5))
+            if skills.Adept(self, speed) and target.HP > 0:
+                damage += self.battleskillcheck(self, target, damage, nihil)
             return damage
         return 0
 
@@ -316,14 +328,14 @@ class hero:
         self.coins = 1
         self.exp = 0
         self.culmlvl = 0
-        self.promoted = 1
+        self.promoted = 0
         self.actuallvl = 1
         self.displvl = 1
         self.bag = []
         self.convoy = []
         self.equip = None
         self.weakness = setclass("Tactician").weakness
-        self.skillset = []
+        self.skillset = ["Aptitude"]
         self.inactiveskills = []
 
     def expgain(self,exp):
@@ -370,10 +382,19 @@ class hero:
         gain = False
         for i in range(len(self.default)):
             g = random.randrange(100)
-            if g <= self.default[i] and self.stats[i] < self.max[i]:
+            rate = self.default[i]
+            if "Aptitude" in setupskills(self):
+                rate += 20
+            if g <= rate and self.stats[i] < self.max[i]:
                 self.stats[i] += 1
                 sys.stdout.write("Gained 1 {}.\n".format(statread[i]))
                 gain = True
+            if rate > 100:
+                rate -= 100
+                if self.stats[i] < self.max[i] and random.randrange(100) <= rate:
+                    self.stats[i] += 1
+                    sys.stdout.write("Gained 1 more {}.\n".format(statread[i]))
+                    gain = True
         if gain == False:
             sys.stdout.write("Sadly, no stats were gained this time.\n")
         self.setstats()
@@ -530,7 +551,10 @@ class hero:
         self.setstats()
 
     def boost(self,index,amount):
-        self.stats[index] += amount
+        if self.stats[index] < self.max[index]:
+            self.stats[index] += amount
+            if self.stats[index] > self.max[index]:
+                self.stats[index] = self.max[index]
         print('{} increased by {}.'.format(statread[index],amount))
         time.sleep(1)
         self.setstats()
@@ -604,7 +628,7 @@ class hero:
                 if skill in faireskills:
                     Weaponfaire(self,skill,5)
                 elif skill in internalskills:
-                    statskillcheck(hero)
+                    statskillcheck(self)
 
     def statplus(self, item):
         amount = item.obj.boost
@@ -694,17 +718,25 @@ class hero:
 
     def howtoattack(self,target):
         n = nihilcheck(self,target)
+        r = skills.Resolve(self)
         if self.equip == None:
             return self.struggle(target,n)
         else:
             dmg = self.equip.attack
             if self.equip.obj.type == "W":
-                dmg += self.strength
+                st = self.strength
+                if r:
+                    st *= 1.5
+                    st = int(st)
+                dmg += st
             else:
                 dmg += self.magic
             if self.equip.obj.weakness != [None] and self.weaknesses(target) and not n:
                 dmg *= 3
-            return battleskillcheck(self, target, dmg, n)
+            if r:
+                return battleskillcheck(self, target, dmg, n, int(self.skill * 1.5), int(self.speed * 1.5))
+            else:
+                return battleskillcheck(self, target, dmg, n, self.skill, self.speed)
 
     def weaknesses(self,target):
         for i in range(len(self.equip.obj.weakness)):
@@ -736,7 +768,7 @@ class hero:
         Counter(self, target, damage)
         return damage
 
-    def attacking(self, target, damage, nihil):
+    def attacking(self, target, damage, nihil, speed):
         miss = False
         ht = self.hit
         avo = target.avoid
@@ -765,7 +797,9 @@ class hero:
                 self.equip.dur -= 1
             Counter(self, target, damage)
             if self.equip.obj.effect == "Drain": 
-                self.heal(int(damage * .5))  
+                self.heal(int(damage * .5))
+            if skills.Adept(self, speed) and target.HP > 0:
+                damage += self.battleskillcheck(self, target, damage, nihil)
             return damage
         return 0
 
@@ -791,10 +825,14 @@ class hero:
             basedamageexp = max(int((33+difference)/3), 1)
             basekillexp = max(int(26 + (difference * 3)),7)
         if isdead == False:
-            return basedamageexp
+            exp = basedamageexp
         elif isdead:
-            return basedamageexp + basekillexp
-        
+            exp = basedamageexp + basekillexp
+        if "Paragon" in setupskills(self):
+            exp *= 2
+        if exp > 100:
+            exp = 100
+        return exp
 
 #############################################################################################################################################
 
@@ -1106,20 +1144,10 @@ def print_level(level):
             else:
                 sys.stdout.write(level[i][j])
         sys.stdout.write('\n')
- 
-def read_key():
-    '''
-    Read a single key from stdin
-    '''
-    try:
-        fd = sys.stdin.fileno()
-        tty_settings = termios.tcgetattr(fd)
-        tty.setraw(fd)
- 
-        key = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, tty_settings)
-    return key
+
+############################################################################################################
+
+r = _Getch()
 
 #################################################################################################################################################################
 
@@ -1199,9 +1227,7 @@ if __name__ == '__main__':
         # level, and then swap back
         old, level[char.position.x][char.position.y] = level[char.position.x][char.position.y], 'Д' #changed @ with Д
         print_level(level)
-        level[char.position.x][char.position.y] = old
-        if "Renewal" in char.skillset and char.HP < char.maxHP:
-            char.heal(int(char.maxHP * .1))                 
+        level[char.position.x][char.position.y] = old              
         if char.displvl == 20:
             sys.stdout.write('{} HP:{}/{} Class:{} Lvl:{} EXP:MAX Money:{}G\n'.format(char.name,char.HP,char.maxHP,char.type.name,char.displvl, char.money))
         else:
@@ -1238,7 +1264,7 @@ if __name__ == '__main__':
             else:
                 print("Bag full.")
  
-        key = read_key()
+        key = r.read_key()
 
         newpos = Point(char.position.x, char.position.y)
         didyoumove = True
@@ -1286,7 +1312,7 @@ if __name__ == '__main__':
         elif key == 'o':
             sys.stdout.write("Please set the direction that you are facing(WASD).")
             sys.stdout.flush()
-            k = read_key()
+            k = r.read_key()
             if k == 'a':
                 direction = "W"
                 sys.stdout.write("Facing west.")
@@ -1338,6 +1364,8 @@ if __name__ == '__main__':
                         m.lvlchange()
                         #print("It is level {}".format(m.lvl)) #debug
                         m.grow(m.lvl)
+                        if which == 1:
+                            m.promoted = 1
                         monsters.append(m)
      
             if level[newpos.x][newpos.y] == '>':
@@ -1352,9 +1380,9 @@ if __name__ == '__main__':
                 print("Entering level {}".format(current))
                 if current == 40:
                     sys.stdout.write("Looks like you reached the end of this labyrinth.")
-                    read_key()
+                    r.read_key()
                     sys.stdoud.write("I applaud you, {}. Thanks for playing.".format(char.name))
-                    read_key()
+                    r.read_key()
                     break
                 newpos = find_staircase(levels[current], '<')
 
@@ -1424,7 +1452,10 @@ if __name__ == '__main__':
                 if m.HP <= 0:
                     itemname = None
                     m.die(level)
-                    if char.luck >= random.randrange(100): #Equipped weapons will drop at a rate equal to luck
+                    rate = char.luck
+                    if "Treasure Hunter" in setupskills(char):
+                        rate += 20
+                    if rate >= random.randrange(100) and m.equip != None: #Equipped weapons will drop at a rate equal to luck
                         itemname = enemydrop(m.equip, level, m.pos, items)
                     monsters.remove(m)
                     sys.stdout.write('{} has killed a {}.\n'.format(char.name, m.name))
