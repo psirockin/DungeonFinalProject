@@ -4,7 +4,7 @@ import sys
 
 pavise = ["Lance","Sword","Axe"]
 aegis = ["Bow","Magic"]
-notskill = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist","Brave","Drain"]
+notskill = ["HP","Strength","Magic","Skill","Speed","Luck","Defense","Resist","Brave","Drain","Heal"]
 faireskills = ["Swordfaire","Lancefaire","Axefaire","Bowfaire","Tomefaire"]
 breakerskills = ["Swordbreaker","Lancebreaker","Axebreaker","Bowbreaker","Tomebreaker"]
 battleskills = ["Lethality","Aether","Astra","Luna","Ignis","Vengeance","Sol"]
@@ -17,11 +17,11 @@ def nihilcheck(hero, target): #checks if enemy has Nihil
     return False
 
 def setupskills(hero):
-    allskills = hero.skillset
+    allskills = list(hero.skillset)
     if hero.equip != None and hero.equip.obj.effect != None:
         for i in range(len(hero.equip.obj.effect)):
-                if hero.equip.obj.effect not in notskill:
-                    allskills.append(hero.equip.obj.effect)
+                if hero.equip.obj.effect[i] not in notskill and hero.equip.obj.effect[i] not in allskills:
+                    allskills.append(hero.equip.obj.effect[i])
     return allskills
 
 def dmgmod(hero, target, dmg):
@@ -89,6 +89,8 @@ def battleskillcheck(hero, target, damage, nihil, skl, spd):
                         return Aether(hero, target, damage)
                     elif skill == "Astra" and int(skl/2) >= active:
                         return Astra(hero, target, damage)
+                    elif skill == "Colossus" and int(skl/2) >= active:
+                        return Colossus(hero, target, damage)
                     elif skill == "Sol" and skl >= active:
                         return Sol(hero, target, damage)
                     elif skill == "Luna" and skl >= active:
@@ -229,6 +231,8 @@ def avomidbattlecheck(hero, target, avo): #bad guys
             a -= 10
     return a
 
+
+
 def startcheck(hero):
     sk = setupskills(hero)
     if "Renewal" in sk and hero.HP < hero.maxHP:
@@ -283,19 +287,19 @@ def secondbreakercheck(avo, hero, target, sk):
     weapon = hero.equip.obj.school
     breaker = False
     if "Swordbreaker" in sk and weapon == "Sword":
-        print("Swordbreaker activated!")
+        print("Swordbreaker activated! ")
         breaker = True
     elif "Lancebreaker" in sk and weapon == "Lance":
-        print("Lancebreaker activated!")
+        print("Lancebreaker activated! ")
         breaker = True
     elif "Axebreaker" in sk and weapon == "Axe":
-        print("Axebreaker activated!")
+        print("Axebreaker activated! ")
         breaker = True
     elif "Bowbreaker" in sk and weapon == "Bow":
-        print("Bowbreaker activated!")
+        print("Bowbreaker activated! ")
         breaker = True
     elif "Tomebreaker" in sk and weapon == "Magic":
-        print("Tomebreaker activated!")
+        print("Tomebreaker activated! ")
         breaker = True
     if breaker:
         a += 50
@@ -305,7 +309,7 @@ def Wrath(hero):
     sk = setupskills(hero)
     if len(sk) != 0:
         if "Wrath" in sk and hero.HP <= int(hero.HP / 2):
-            print("Wrath activated!")
+            print("Wrath activated! ")
             return 20
     return 0
 
@@ -313,13 +317,13 @@ def Armsthrift(hero):
     sk = setupskills(hero)
     if len(sk) != 0:
         if "Armsthrift" in sk and random.randrange(100) <= hero.luck * 2:
-            print("Armsthrift activated!")
+            print("Armsthrift activated! ")
             return True
     return False
 
 def Miracle(hero):
     if hero.HP < 11:
-        print("Miracle activated!")
+        print("Miracle activated! ")
         return 10 * (11 - hero.HP)
     return 0    
 
@@ -330,7 +334,7 @@ def Lethality(hero, target): #This will be player only because hax sucks
     return dmg
 
 def Nihil(target): #Blocks critical hits(FE4) and activation of other skills(FE4, 5, 9, 10). Amazing.
-    print("Nihil activated!")
+    print("Nihil activated! ")
     return True
 
 def Astra(hero, target, damage): #halves damage, but allows the unit to hit 5 times
@@ -343,6 +347,10 @@ def Astra(hero, target, damage): #halves damage, but allows the unit to hit 5 ti
         sys.stdout.write("Hit number {}! Dealt {} damage!\n".format(times+1, hit))
         times += 1
     return accum
+
+def Colossus(hero, target, damage):
+    sys.stdout.write("Colossus activated!")
+    return hero.attacking(target, damage * 3)
 
 def Luna(hero, target, damage):
     sys.stdout.write("Luna activated! ")
@@ -390,6 +398,9 @@ def Vengeance(hero, target, damage):
     sys.stdout.write("Vengeance activated! ")
     damage += int((hero.maxHP - hero.HP) / 2)
     return hero.attacking(target, damage)
+
+def Flare(hero):
+    return int(hero.skill / 2) > random.randrange(100) and "Flare" in hero.skillset
 
 def Despoil(hero):
     sys.stdout.write("Despoil activated! Gained 1000G.")

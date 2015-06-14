@@ -272,6 +272,7 @@ class Monster:
         ht = skills.hitmidbattlecheck(self, target, ht)
         avo = skills.avomidbattlecheck(self, target, avo)
         hit_rate = ht - avo
+        flare = False
         crit = self.crit - target.luck + Wrath(self) + skills.Anathema(self)
 #        print("{}'s hit rate before: {}%, crit rate: {}%.".format(self.name,self.hit - target.avoid,crit))
         print("{}'s hit rate: {}%, crit rate: {}%.".format(self.name,hit_rate,crit))
@@ -282,7 +283,10 @@ class Monster:
             if self.equip.obj.type == "W":
                 damage -= target.defense
             else:
-                damage -= target.resist
+                if skills.Flare(self):
+                    flare = True
+                else:
+                    damage -= target.resist
             if damage <= 0:
                 damage = 0
             if crit > random.randrange(100) and not nihil:
@@ -295,6 +299,9 @@ class Monster:
             Counter(self, target, damage)
             if self.equip.obj.effect == "Drain": 
                 self.heal(int(damage * .5))
+            if flare:
+                sys.stdout.write("Flare activated!")
+                self.heal(damage)
             if skills.Adept(self, speed) and target.HP > 0:
                 damage += self.battleskillcheck(self, target, damage, nihil)
             return damage
@@ -304,7 +311,7 @@ class Monster:
         self.HP += amount
         if self.HP >= self.maxHP:
             self.HP = self.maxHP
-        sys.stdout.write("Recovered {} HP. ".format(amount))
+        print("Recovered {} HP. ".format(amount))
  
 #########################################################################################################################################################################
 
@@ -317,7 +324,7 @@ class hero:
         self.money = 1000
         self.type = setclass("Tactician")
         self.weapons = setclass("Tactician").weapons
-        self.stats = [29,11,10,10,11,9,11,9] #[19,6,5,5,6,4,6,4] was the original, but I'm going to increase it by 5(10 on HP) on each stat because soloing
+        self.stats = [24,9,8,8,9,7,9,7] #[19,6,5,5,6,4,6,4] was the original, but I'm going to increase it by 3(5 on HP) on each stat because soloing
         self.base = [40,40,35,35,35,55,30,20] #This is personal to the player. I will use this a lot for changing class.
         self.default = [0,0,0,0,0,0,0,0] #HP, Str, Mag, Skl, Spd, Lck, Def, Res
         self.modify = [0,0,0,0,0,0,0,0] #This will be static once assets and flaws are determined
@@ -336,7 +343,7 @@ class hero:
         self.equip = None
         self.weakness = setclass("Tactician").weakness
         self.skillset = ["Aptitude"]
-        self.inactiveskills = []
+        self.inactiveskills = ["Magic +2"]
 
     def expgain(self,exp):
         self.exp += exp
@@ -775,6 +782,7 @@ class hero:
         ht = skills.hitmidbattlecheck(self, target, ht)
         avo = skills.avomidbattlecheck(self, target, avo)
         hit_rate = ht - avo
+        flare = False
         crit = self.crit - target.luck + Wrath(self) + skills.Anathema(self)
 #        print("{}'s hit rate before: {}%, crit rate: {}%.".format(self.name,self.hit - target.avoid,crit))
         print("{}'s hit rate: {}%, crit rate: {}%.".format(self.name,hit_rate,crit))
@@ -785,7 +793,10 @@ class hero:
             if self.equip.obj.type == "W":
                 damage -= target.defense
             else:
-                damage -= target.resist
+                if skills.Flare(self):
+                    flare = True
+                else:
+                    damage -= target.resist
             if damage <= 0:
                 damage = 0
             if crit > random.randrange(100) and not nihil:
@@ -798,6 +809,9 @@ class hero:
             Counter(self, target, damage)
             if self.equip.obj.effect == "Drain": 
                 self.heal(int(damage * .5))
+            if flare:
+                sys.stdout.write("Flare activated!")
+                self.heal(damage)
             if skills.Adept(self, speed) and target.HP > 0:
                 damage += self.battleskillcheck(self, target, damage, nihil)
             return damage
@@ -807,7 +821,7 @@ class hero:
         self.HP += amount
         if self.HP >= self.maxHP:
             self.HP = self.maxHP
-        sys.stdout.write("Recovered {} HP. ".format(amount))
+        print("Recovered {} HP. ".format(amount))
 
     def calcexp(self,target,damage,isdead):
         difference = target.lvl - self.actuallvl
@@ -1203,6 +1217,8 @@ if __name__ == '__main__':
     init.append(godmake("Vulnerary"))
     init.append(godmake("Bronze Sword"))
     init.append(godmake("Thunder"))
+    init.append(godmake("Holy Sword"))
+    init.append(godmake("Elite Sword"))
 #    init.append(godmake("Master Seal"))
 #    init.append(godmake("Second Seal"))
     for i in range(len(init)):
@@ -1241,9 +1257,11 @@ if __name__ == '__main__':
                 sys.stdout.write('Equipped: {}, which has {} uses. Floor: {} Coins: {}\n'.format(char.equip.name, char.equip.dur,current+1,char.coins))
         else:
             sys.stdout.write('Equipped: Nothing! Floor: {} Coins: {}\n'.format(current+1,char.coins))
+        k = setupskills(char)
         s = ""
-        for i in range(len(char.skillset)):
-            s += char.skillset[i] + " "
+        for i in range(len(k)):
+#           print("Adding {}.".format(k[i]))
+            s += k[i] + " "
         print("Skills: {}".format(s))
  
         if level[char.position.x][char.position.y] == '?':
@@ -1293,7 +1311,7 @@ if __name__ == '__main__':
                     if char.equip != None and char.equip.dur <= 0:
                         print("{} broke!".format(char.equip.obj.name))
                         char.equip = None
-                    if char.equip != None and char.equip.dur > 0 and char.equip.obj.effect == "Brave" and m.HP > 0:
+                    if char.equip != None and char.equip.dur > 0 and "Brave" in char.equip.obj.effect and m.HP > 0:
                         herodamage = char.howtoattack(m)
                         sys.stdout.write('ATTACK AGAIN! {} has dealt {} damage to {}.\n'.format(char.name, herodamage, m.name))
                     if m.HP > 0:
@@ -1428,7 +1446,7 @@ if __name__ == '__main__':
                         if char.equip != None and char.equip.dur <= 0:
                             print("{} broke!".format(char.equip.obj.name))
                             char.equip = None
-                        if char.equip != None and char.equip.dur > 0 and char.equip.obj.effect == "Brave" and m.HP > 0:
+                        if char.equip != None and char.equip.dur > 0 and "Brave" in char.equip.obj.effect and m.HP > 0:
                             herodamage = char.howtoattack(m)
                             sys.stdout.write('ATTACK AGAIN! {} has dealt {} damage to {}.\n'.format(char.name, herodamage, m.name))
                         postbattlecheck(char, m)
@@ -1476,7 +1494,7 @@ if __name__ == '__main__':
                             # Monster moves into player, attack!
                             d = m.howtoattack(char)
                             sys.stdout.write('{} took {} damage from {}.\n'.format(char.name,d, m.name))
-                            if m.equip != None and m.equip.dur > 0 and m.equip.obj.effect == "Brave" and char.HP > 0:
+                            if m.equip != None and m.equip.dur > 0 and "Brave" in m.equip.obj.effect and char.HP > 0:
                                 d = char.howtoattack(m)
                                 sys.stdout.write('ATTACK AGAIN! {} took {} damage from {}.\n'.format(char.name,d, m.name))
                             wait = True

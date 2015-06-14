@@ -15,7 +15,7 @@ unit("Archer",[None],["Bow"],[45,15,0,30,15,0,10,5],["Sniper","Bow Knight"],[16,
 unit("Thief",[None],["Sword"],[35,15,5,25,25,0,5,5],["Assassin","Trickster"],[16,3,0,6,8,0,2,0],[60,22,20,30,28,30,21,20],"Luck +4","Treasure Hunter"),
 unit("Mage",[None],["Magic"],[35,0,20,20,20,0,5,10],["Sage","Dark Knight"],[16,0,4,3,4,0,2,3],[60,20,28,27,26,30,21,25],"Magic +2","Underdog"),
 unit("Wyvern Rider",["Dragon","Wing"],["Axe"],[45,30,0,15,15,0,10,5],["Wyvern Lord","Griffon Rider"],[19,7,0,6,5,0,8,0],[60,28,20,24,24,30,28,20],"Strength +2",None),
-unit("Knight",["Armor"],["Lance"],[50,25,0,15,10,0,15,5],["General","Great Knight"],[18,8,0,4,2,0,11,0],[60,30,20,26,23,30,0,30,22],"Defense +2",""),
+unit("Knight",["Armor"],["Lance"],[50,25,0,15,10,0,15,5],["General","Great Knight"],[18,8,0,4,2,0,11,0],[60,30,20,26,23,30,0,30,22],"Defense +2",None),
 unit("Dark Mage",[None],["Magic","Dark Magic"],[50,5,15,15,15,0,10,10],["Sorcerer","Dark Knight"],[18,1,3,2,3,0,4,4],[60,20,27,25,25,30,25,27],"Hex","Anathema"),
 unit("Fighter",[None],["Axe"],[45,25,0,20,15,0,10,5],["Hero","Warrior"],[20,8,0,5,5,0,4,0],[60,29,20,26,25,30,25,23],"HP +5","Zeal"),
 unit("Barbarian",[None],["Axe"],[50,25,0,15,20,0,5,5],["Berserker","Warrior"],[22,8,0,3,8,0,3,0],[60,29,20,26,25,30,25,23],"Despoil","Gamble"),
@@ -24,8 +24,8 @@ unit("Pegasus Knight",["Wing","Horse"],["Lance"],[40,15,5,25,25,0,5,10],["Falcon
 ,
 [
 unit("Grandmaster",[None],["Sword","Magic"], [40,15,15,15,15,0,10,10],None,[20,7,6,7,7,0,7,5],[80,40,40,40,40,45,40,40],"Ignis","Shadowgift"),
-unit("Paladin",["Horse"],["Sword","Lance"], [45,20,0,20,20,0,10,10],None,[25,9,1,7,8,0,10,6],[80,42,30,40,40,45,42,42],"Aegis","Resist +10"),
-unit("Great Knight",["Horse","Armor"],["Sword","Lance","Axe"],[50,25,0,15,15,0,15,5],None,[26,11,0,6,5,0,14,1],[80,48,20,34,37,45,48,30],"Luna",None),
+unit("Paladin",["Horse"],["Sword","Lance"], [45,20,0,20,20,0,10,10],None,[25,9,1,7,8,0,10,6],[80,42,30,40,40,45,42,42],"Resist +10","Aegis"),
+unit("Great Knight",["Horse","Armor"],["Sword","Lance","Axe"],[50,25,0,15,15,0,15,5],None,[26,11,0,6,5,0,14,1],[80,48,20,34,37,45,48,30],"Luna","Corrosion"),
 unit("Hero",[None],["Sword","Axe"], [45, 20, 0, 25, 20, 0, 10, 5],None,[22,8,1,11,10,0,8,3],[80,50,30,41,35,45,50,35],"Sol","Axebreaker"),
 unit("Swordmaster",[None],["Sword"],[40,20,0,25,25,0,5,10],None,[20,7,2,11,13,0,6,4],[80,38,34,44,46,45,33,38],"Astra","Swordfaire"),
 unit("Sniper",[None],["Bow"],[45,15,0,30,15,0,15,5],None,[20,7,1,12,9,0,10,3],[80,42,30,46,42,45,40,36],"Hit Rate +20","Bowfaire"),
@@ -38,10 +38,10 @@ unit("Sorcerer",[None],["Magic","Dark Magic"],[45,0,20,15,15,0,10,10],None,[23,2
 unit("Wyvern Lord",["Dragon","Wing"],["Axe","Lance"],[45,30,0,15,15,0,10,5],None,[24,11,0,8,7,0,11,3],[80,46,30,38,38,45,46,30],"Disarm","Swordbreaker"),
 unit("Griffon Rider",["Wing","Horse"],["Axe"],[45,25,0,20,20,0,5,5],None,[22,9,0,10,9,0,8,3],[80,40,30,43,41,45,40,30],None,"Lancebreaker"),
 unit("General",["Armor"],["Lance","Axe"],[50,25,0,15,10,0,15,10],None,[28,12,0,7,4,0,15,3],[80,50,30,41,35,45,50,35],"Resolve","Pavise"),
-unit("Warrior",[None],["Armor","Bow"],[45,25,0,20,15,0,10,5],None,[28,12,0,8,7,0,7,3],[80,48,30,42,40,45,40,35],None,"Counter"),
+unit("Warrior",[None],["Armor","Bow"],[45,25,0,20,15,0,10,5],None,[28,12,0,8,7,0,7,3],[80,48,30,42,40,45,40,35],"Colossus","Counter"),
 unit("Berserker",[None],["Axe"],[50,25,0,15,20,0,5,5],None,[30,13,0,5,11,0,5,1],[80,50,30,35,44,45,34,30],"Wrath","Axefaire"),
 unit("Falcon Knight",["Wing","Horse"],["Lance"],[40,15,10,25,25,0,5,10],None,[20,6,3,10,11,0,6,9],[80,38,35,45,44,45,33,40],"Nihil","Lancefaire"),
-unit("Dark Flier",["Wing","Horse"],["Lance","Magic"],[40,10,15,20,20,0,5,10],None,[19,5,6,8,10,0,5,9],[80,36,42,41,42,45,32,41],"Corrosion","Renewal")
+unit("Dark Flier",["Wing","Horse"],["Lance","Magic"],[40,10,15,20,20,0,5,10],None,[19,5,6,8,10,0,5,9],[80,36,42,41,42,45,32,41],"Flare","Renewal")
 ]
 ]
 

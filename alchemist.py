@@ -153,7 +153,7 @@ def alchemy(hero, npc):
             else:
                 fusion(hero, p)
         elif i == '2':
-            return search()
+            search()
         elif i == '3':
             print("Come again!")
             time.sleep(1)

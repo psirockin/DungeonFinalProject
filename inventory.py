@@ -5,6 +5,7 @@ from item import weapon
 import tty
 import termios
 from skills import Weaponfaire
+import skills
 
 statskills = ["HP +5","Strength +2","Magic +2","Skill +2","Speed +2","Luck +4","Defense +2","Resist +2","Resist +10"]
 faireskills = ["Swordfaire","Lancefaire","Axefaire","Bowfaire","Tomefaire"]
@@ -47,7 +48,6 @@ class _GetchWindows:
 #################################################################
 
 r = _Getch()
-
 
 # Mitsunari-san's inventory
 
@@ -99,6 +99,8 @@ def take_skill(hero, k):
                 for i in range(1,8,1):
                     hero.stats[i] += 2
                     hero.max[i] += 2
+    elif skill == "Shadowgift":
+        hero.weapons.append("Dark Magic")
     hero.setstats()
     if len(hero.inactiveskills) != 0 and len(hero.skillset) < 5:
         printskills(hero, hero.inactiveskills, "TAKE OUT")
@@ -139,6 +141,8 @@ def put_skill(hero, k):
                 for i in range(1,8,1):
                     hero.stats[i] -= 2
                     hero.max[i] -= 2
+    elif skill == "Shadowgift":
+        hero.weapons.remove("Dark Magic")
     hero.skillset.pop(k)
     hero.inactiveskills.append(skill)
     hero.setstats()
@@ -233,7 +237,7 @@ def equip(hero, item):
         Weaponfaire(hero, n, 5)
         hero.calc_things()
         if item.obj.boost != None:
-            print(item.obj.boost)
+#           print(item.obj.boost)
             hero.statplus(item)
     else:
         print("You can't equip this!")
@@ -354,7 +358,7 @@ def interact(hero, c, level, pos, itemlocs, moving):
                     print("You can't equip that!")
                     time.sleep(2)
                 else:
-                    change(hero, hero.equip,obj)
+                    change(hero, hero.equip, obj)
                 moving = False
                 return
             elif a == '2':
@@ -373,10 +377,15 @@ def interact(hero, c, level, pos, itemlocs, moving):
                         print("You can't use this.")
                 elif obj.obj.type == "H":
                     hero.heal(obj.obj.effect)
+                    time.sleep(1)
                     moving = True
+                    used = True
+                elif obj.obj.effect != None and "Heal" in obj.obj.effect:
+                    hero.heal(obj.obj.boost)
                     used = True
                 elif obj.obj.type == "B": #I used the req parameter here because I don't wanna add another parameter.
                     hero.boost(obj.obj.req,obj.obj.effect)
+                    time.sleep(1)
                     moving = True
                     used = True
                 else:
@@ -384,6 +393,10 @@ def interact(hero, c, level, pos, itemlocs, moving):
                 if used:
                     obj.dur -= 1
                     update(hero)
+                    time.sleep(1)
+                else:
+                    print("You can't use this.")
+                    time.sleep(1)
             elif a == '3':
                 print(obj.obj.desc)
                 if isinstance(obj.obj, weapon):
